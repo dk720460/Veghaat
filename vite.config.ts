@@ -4,13 +4,14 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // CRITICAL: This 'base' setting fixes the blank/white screen on GitHub Pages
-  // It ensures assets are loaded from the relative path instead of root
+  // Use relative base path to ensure assets load correctly on any hosting (Netlify, GitHub Pages)
   base: './', 
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
+    // Ensure small assets are inlined to reduce requests
+    assetsInlineLimit: 4096,
   },
   server: {
     port: 3000,
