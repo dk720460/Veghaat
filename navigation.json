@@ -1,0 +1,27 @@
+
+{
+  "Home": {
+    "systemBack": "askBeforeExit",
+    "appBackButton": "askBeforeExit"
+  },
+  "Category": {
+    "systemBack": "navigateBack",
+    "appBackButton": "navigateBack"
+  },
+  "Product": {
+    "systemBack": "navigateBack",
+    "appBackButton": "navigateBack"
+  },
+  "Cart": {
+    "systemBack": "navigateBack",
+    "appBackButton": "navigateBack"
+  },
+  "Checkout": {
+    "systemBack": "navigateBack",
+    "appBackButton": "navigateBack"
+  },
+  "Profile": {
+    "systemBack": "navigateBack",
+    "appBackButton": "navigateBack"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "VegHaat new",
+  "description": "VegHaat - Fresh Grocery Delivery in 20 Minutes. Your daily needs delivered instantly.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
