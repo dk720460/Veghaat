@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, SlidersHorizontal, ArrowUpDown, ChevronDown, Clock, Minus, Plus, Check } from 'lucide-react';
 import { Product } from '../types';
@@ -168,7 +166,7 @@ const ProductListingPage: React.FC<ProductListingPageProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#F5F7FD] flex flex-col animate-slide-in-right">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-50 bg-[#F5F7FD] flex flex-col animate-slide-in-right">
       {/* Header */}
       <div className="bg-white shadow-sm px-4 py-3 flex items-center justify-between sticky top-0 z-10 border-b border-gray-100">
         <div className="flex items-center space-x-3">

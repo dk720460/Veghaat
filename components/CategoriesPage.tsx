@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { ArrowLeft, Search } from 'lucide-react';
 import { MAIN_SECTIONS } from '../constants';
@@ -12,7 +10,7 @@ interface CategoriesPageProps {
 
 const CategoriesPage: React.FC<CategoriesPageProps> = ({ onBack, onCategoryClick, onSearchClick }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-[#F5F7FD] flex flex-col h-full animate-fade-in">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-50 bg-[#F5F7FD] flex flex-col h-full animate-fade-in">
       {/* Header */}
       <div className="bg-white px-4 py-3 flex items-center justify-between sticky top-0 z-10 border-b border-gray-100 shadow-sm">
         <div className="flex items-center space-x-3">

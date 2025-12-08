@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ShoppingBag } from 'lucide-react';
 
@@ -12,7 +11,7 @@ const ViewCartStickyBar: React.FC<ViewCartStickyBarProps> = ({ itemCount, totalP
   if (itemCount === 0) return null;
 
   return (
-    <div className="fixed bottom-24 left-0 right-0 z-[110] flex justify-center pointer-events-none">
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[110] flex justify-center pointer-events-none">
       <div className="animate-scale-up pointer-events-auto">
         <button 
           onClick={onViewCart}

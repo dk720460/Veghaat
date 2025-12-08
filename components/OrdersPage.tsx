@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Package, Clock, RefreshCw, ChevronRight, CheckCircle, MapPin } from 'lucide-react';
 import { Order, Product } from '../types';
@@ -34,7 +33,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ orders, onBack, onReorder, onTr
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#F5F7FD] flex flex-col h-full animate-fade-in">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-50 bg-[#F5F7FD] flex flex-col h-full animate-fade-in">
       {/* Header */}
       <div className="bg-white px-4 py-3 flex items-center space-x-3 sticky top-0 z-10 border-b border-gray-100 shadow-sm">
         <button onClick={onBack} className="p-3 -ml-2 rounded-full hover:bg-gray-100 transition-colors">

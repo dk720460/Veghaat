@@ -1,9 +1,8 @@
-
 import React from 'react';
 
 const SplashScreen: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-[100] bg-[#2DBE6C] flex flex-col items-center justify-center">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[100] bg-[#2DBE6C] flex flex-col items-center justify-center">
       <div className="flex flex-col items-center animate-scale-up">
         
         {/* App Name */}

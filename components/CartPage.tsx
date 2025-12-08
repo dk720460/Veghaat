@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, Share2, Minus, Plus, ShoppingBag, MapPin, Home, Briefcase, ChevronRight, CreditCard, Banknote, CheckCircle } from 'lucide-react';
 import { Product, Order, OrderItem } from '../types';
@@ -182,7 +180,7 @@ const CartPage: React.FC<CartPageProps> = ({
   // --- RENDER SUCCESS VIEW ---
   if (step === 'success') {
     return (
-      <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center p-6 animate-fade-in">
+      <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[60] bg-white flex flex-col items-center justify-center p-6 animate-fade-in">
         <div className="bg-green-100 p-6 rounded-full mb-6 animate-scale-up">
            <CheckCircle size={64} className="text-green-600" />
         </div>
@@ -217,7 +215,7 @@ const CartPage: React.FC<CartPageProps> = ({
   // --- RENDER EMPTY CART ---
   if (cartProductIds.length === 0 && step === 'cart') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#F5F7FD] flex flex-col items-center justify-center">
+      <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-50 bg-[#F5F7FD] flex flex-col items-center justify-center">
         <div className="bg-white p-6 rounded-full shadow-sm mb-4">
             <ShoppingBag size={48} className="text-gray-300" />
         </div>
@@ -236,7 +234,7 @@ const CartPage: React.FC<CartPageProps> = ({
   const hasSavedAddress = address.name && address.phone && address.flat && address.area;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#F5F7FD] flex flex-col h-full animate-slide-in-right">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[60] bg-[#F5F7FD] flex flex-col h-full animate-slide-in-right">
       {/* Header */}
       <div className="bg-white px-4 py-3 flex items-center justify-between sticky top-0 z-10 border-b border-gray-100 shadow-sm">
         <div className="flex items-center space-x-3">
@@ -517,7 +515,7 @@ const CartPage: React.FC<CartPageProps> = ({
 
       {/* --- PROFESSIONAL STICKY FOOTER ACTION BUTTON --- */}
       {/* Positioned at bottom-16 to sit exactly ON TOP of the main navigation footer (h-16) */}
-      <div className="fixed bottom-16 left-0 right-0 z-[120] bg-white border-t border-gray-100 p-4 pb-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] w-full">
+      <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[120] bg-white border-t border-gray-100 p-4 pb-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
           {step === 'cart' && (
                <button 
                  onClick={handleProceedFromCart}

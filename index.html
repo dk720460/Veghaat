@@ -23,10 +23,17 @@
         width: 100%;
         margin: 0;
         padding: 0;
-        background-color: #F4F6F8; /* Matches app background */
+        background-color: #111827; /* Dark background for desktop to highlight app */
         font-family: 'Inter', sans-serif;
         -webkit-tap-highlight-color: transparent;
         overscroll-behavior-y: none;
+      }
+
+      /* Mobile overrides */
+      @media (max-width: 480px) {
+        body {
+          background-color: #F4F6F8;
+        }
       }
 
       #root {
@@ -139,16 +146,16 @@
       @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
       .animate-shake { animation: shake 0.3s ease-in-out; }
     </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "vite": "https://aistudiocdn.com/vite@^7.2.6",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.7",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
 }
 </script>

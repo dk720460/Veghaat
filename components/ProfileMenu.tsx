@@ -32,7 +32,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose, onSelect, us
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/50 flex justify-end">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[100] bg-black/50 flex justify-end">
       <div className="w-80 h-full bg-white shadow-xl animate-slide-in-right overflow-y-auto flex flex-col">
         <div className="p-6 bg-green-50 border-b border-green-100 flex justify-between items-center">
           <div>

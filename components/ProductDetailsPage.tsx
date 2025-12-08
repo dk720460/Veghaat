@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Share2, Heart, Clock, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
 import { Product } from '../types';
@@ -74,7 +72,7 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white flex flex-col overflow-y-auto pb-40 animate-scale-up">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[60] bg-white flex flex-col overflow-y-auto pb-40 animate-scale-up">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100">
         <button onClick={onBack} className="p-3 -ml-2 rounded-full bg-gray-100/80 hover:bg-gray-200">

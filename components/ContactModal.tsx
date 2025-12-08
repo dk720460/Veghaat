@@ -11,7 +11,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[110] bg-black/60 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-scale-up">
         <div className="bg-green-600 p-6 text-white flex justify-between items-start">
           <div>

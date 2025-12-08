@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { User, ChevronDown, Loader, MapPin } from 'lucide-react';
 import { ref, onValue, set, get, update } from 'firebase/database';
@@ -380,7 +378,7 @@ const App: React.FC = () => {
   const totalItems = (Object.values(cartItems) as number[]).reduce((sum, qty) => sum + qty, 0);
   const cartTotalPrice = Object.entries(cartItems).reduce((sum, [id, qty]) => {
       const product = products.find(p => p.id === id);
-      return sum + (product ? (product.price * qty) : 0);
+      return sum + (product ? (Number(product.price) * Number(qty)) : 0);
   }, 0);
   
   const vegProducts = products.filter(p => p.category.toLowerCase().match(/veg|fruit/)).slice(0, 12);
@@ -388,229 +386,237 @@ const App: React.FC = () => {
   const stapleProducts = products.filter(p => p.category.toLowerCase().match(/atta|aata|rice|dal|oil|masala/)).slice(0, 12);
   const careProducts = products.filter(p => p.category.toLowerCase().match(/bath|baby|care|clean/)).slice(0, 15);
 
-  if (showSplash) return <SplashScreen />;
-
-  if (authLoading) return <div className="h-screen w-full flex items-center justify-center bg-[#F5F5F5]"><Loader className="animate-spin text-green-600" size={32} /></div>;
-  if (!user) return <AuthPage />;
-
   return (
-    <div className="min-h-screen pb-24 relative w-full bg-[#F4F6F8] overflow-x-hidden">
+    <div className="min-h-screen w-full flex justify-center bg-gray-900">
+    {/* Main App Container - Centered on Desktop */}
+    <div className="w-full max-w-[480px] bg-[#F4F6F8] min-h-screen relative shadow-2xl overflow-x-hidden flex flex-col">
       
-      <ProfileMenu 
-        isOpen={isProfileOpen} 
-        onClose={() => setIsProfileOpen(false)} 
-        onSelect={handleProfileMenuSelect}
-        user={user}
-      />
-
-      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      {showSplash && <SplashScreen />}
       
-      <ExitModal 
-        isOpen={showExitConfirmation} 
-        onClose={() => setShowExitConfirmation(false)} 
-        onConfirm={handleExitApp} 
-      />
+      {!showSplash && authLoading && <div className="h-screen w-full flex items-center justify-center bg-[#F5F5F5]"><Loader className="animate-spin text-green-600" size={32} /></div>}
+      
+      {!showSplash && !authLoading && !user && <AuthPage />}
+      
+      {!showSplash && !authLoading && user && (
+      <>
+        <ProfileMenu 
+          isOpen={isProfileOpen} 
+          onClose={() => setIsProfileOpen(false)} 
+          onSelect={handleProfileMenuSelect}
+          user={user}
+        />
 
-      {view === 'home' && (
-        <>
-           {/* FIXED HEADER (Includes Logo, Search, AND Categories) */}
-           <div className="fixed top-0 left-0 right-0 z-40 bg-white shadow-sm transition-all duration-300 border-b border-gray-100 w-full rounded-b-xl">
-               <header className="px-4 py-3 flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <h1 className="text-2xl font-black text-green-600 tracking-tight flex items-center">
-                      {APP_NAME} 
-                      <span className="ml-2 text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm">
-                        20 mins
-                      </span>
-                    </h1>
-                    <div className="flex items-center space-x-1 mt-0.5 cursor-pointer active:opacity-70" onClick={navigateToAddress}>
-                      <span className="text-xs font-bold text-gray-800 line-clamp-1 max-w-[200px]">
-                        {deliveryAddress ? deliveryAddress.split(',')[0] : 'Select Location'}
-                      </span>
-                      <ChevronDown size={14} className="text-green-600" />
+        <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+        
+        <ExitModal 
+          isOpen={showExitConfirmation} 
+          onClose={() => setShowExitConfirmation(false)} 
+          onConfirm={handleExitApp} 
+        />
+
+        {view === 'home' && (
+          <>
+            {/* FIXED HEADER (Includes Logo, Search, AND Categories) */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 bg-white shadow-sm transition-all duration-300 border-b border-gray-100 rounded-b-xl">
+                <header className="px-4 py-3 flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <h1 className="text-2xl font-black text-green-600 tracking-tight flex items-center">
+                        {APP_NAME} 
+                        <span className="ml-2 text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm">
+                          20 mins
+                        </span>
+                      </h1>
+                      <div className="flex items-center space-x-1 mt-0.5 cursor-pointer active:opacity-70" onClick={navigateToAddress}>
+                        <span className="text-xs font-bold text-gray-800 line-clamp-1 max-w-[200px]">
+                          {deliveryAddress ? deliveryAddress.split(',')[0] : 'Select Location'}
+                        </span>
+                        <ChevronDown size={14} className="text-green-600" />
+                      </div>
+                      {deliveryAddress && (
+                          <p className="text-[10px] text-gray-500 line-clamp-1 max-w-[220px]">
+                              {deliveryAddress}
+                          </p>
+                      )}
                     </div>
-                    {deliveryAddress && (
-                        <p className="text-[10px] text-gray-500 line-clamp-1 max-w-[220px]">
-                            {deliveryAddress}
-                        </p>
-                    )}
-                  </div>
-                  <button 
-                    onClick={() => setIsProfileOpen(true)}
-                    className="p-2.5 bg-gray-50 rounded-full text-green-700 hover:bg-green-100 transition-colors shadow-sm"
-                  >
-                    <User size={22} />
-                  </button>
-               </header>
-               <SearchBar products={products} onProductClick={navigateToDetails} />
-               
-               {/* CATEGORY BAR INTEGRATED INTO HEADER */}
-               <CategoryBar 
-                  activeCategory={activeCategory} 
-                  onSelectCategory={(id, target) => { 
-                      setActiveCategory(id);
-                      if(target === 'top') {
-                          window.scrollTo({top: 0, behavior: 'smooth'});
-                      } else {
-                          navigateToListing(target);
-                      }
-                  }} 
-               />
-           </div>
+                    <button 
+                      onClick={() => setIsProfileOpen(true)}
+                      className="p-2.5 bg-gray-50 rounded-full text-green-700 hover:bg-green-100 transition-colors shadow-sm"
+                    >
+                      <User size={22} />
+                    </button>
+                </header>
+                <SearchBar products={products} onProductClick={navigateToDetails} />
+                
+                {/* CATEGORY BAR INTEGRATED INTO HEADER */}
+                <CategoryBar 
+                    activeCategory={activeCategory} 
+                    onSelectCategory={(id, target) => { 
+                        setActiveCategory(id);
+                        if(target === 'top') {
+                            window.scrollTo({top: 0, behavior: 'smooth'});
+                        } else {
+                            navigateToListing(target);
+                        }
+                    }} 
+                />
+            </div>
 
-           {/* MAIN SCROLLABLE CONTENT - Increased Padding for Taller Header */}
-           <div className="pt-[240px] w-full max-w-[100vw] overflow-x-hidden">
-               
-               {/* 1. WELCOME HEADER (First item in scroll) */}
-               <WelcomeHeader />
-               
-               {/* 2. BANNERS */}
-               <Banners banners={banners} onBannerClick={() => navigateToListing('Best Sellers')} />
+            {/* MAIN SCROLLABLE CONTENT - Increased Padding for Taller Header */}
+            <div className="pt-[240px] w-full pb-24">
+                
+                {/* 1. WELCOME HEADER (First item in scroll) */}
+                <WelcomeHeader />
+                
+                {/* 2. BANNERS */}
+                <Banners banners={banners} onBannerClick={() => navigateToListing('Best Sellers')} />
 
-               {/* 3. DELIVERY ANIMATION */}
-               <DeliveryAnimation />
+                {/* 3. DELIVERY ANIMATION */}
+                <DeliveryAnimation />
 
-               {/* 4. SECTIONS GRID */}
-               <SectionList sections={sections} onCategoryClick={navigateToListing} />
+                {/* 4. SECTIONS GRID */}
+                <SectionList sections={sections} onCategoryClick={navigateToListing} />
 
-               {/* 5. PRODUCT RAILS */}
-               <ProductRail 
-                  title="Fresh Vegetables & Fruits" 
-                  products={vegProducts} 
-                  cartItems={cartItems}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onProductClick={navigateToDetails}
-                  onCategoryClick={() => navigateToListing('Vegetables & Fruit')}
-               />
+                {/* 5. PRODUCT RAILS */}
+                <ProductRail 
+                    title="Fresh Vegetables & Fruits" 
+                    products={vegProducts} 
+                    cartItems={cartItems}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onProductClick={navigateToDetails}
+                    onCategoryClick={() => navigateToListing('Vegetables & Fruit')}
+                />
 
-               <ProductRail 
-                  title="Atta, Rice & Dal" 
-                  products={stapleProducts} 
-                  cartItems={cartItems}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onProductClick={navigateToDetails}
-                  onCategoryClick={() => navigateToListing('Atta Rice & Dal')}
-                  bgColor="bg-[#F8F9FA]"
-               />
+                <ProductRail 
+                    title="Atta, Rice & Dal" 
+                    products={stapleProducts} 
+                    cartItems={cartItems}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onProductClick={navigateToDetails}
+                    onCategoryClick={() => navigateToListing('Atta Rice & Dal')}
+                    bgColor="bg-[#F8F9FA]"
+                />
 
-               <ProductRail 
-                  title="Cold Drinks & Juices" 
-                  products={drinkProducts} 
-                  cartItems={cartItems}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onProductClick={navigateToDetails}
-                  onCategoryClick={() => navigateToListing('Drinks & Juices')}
-               />
-               
-               <ProductRail 
-                  title="Household & Personal Care" 
-                  products={careProducts} 
-                  cartItems={cartItems}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onProductClick={navigateToDetails}
-                  onCategoryClick={() => navigateToListing('Personal Care & Beauty')}
-                  bgColor="bg-[#F8F9FA]"
-               />
-               
-               {/* Bottom Spacing for Floating Nav */}
-               <div className="h-20"></div>
-           </div>
-        </>
-      )}
+                <ProductRail 
+                    title="Cold Drinks & Juices" 
+                    products={drinkProducts} 
+                    cartItems={cartItems}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onProductClick={navigateToDetails}
+                    onCategoryClick={() => navigateToListing('Drinks & Juices')}
+                />
+                
+                <ProductRail 
+                    title="Household & Personal Care" 
+                    products={careProducts} 
+                    cartItems={cartItems}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onProductClick={navigateToDetails}
+                    onCategoryClick={() => navigateToListing('Personal Care & Beauty')}
+                    bgColor="bg-[#F8F9FA]"
+                />
+                
+                {/* Bottom Spacing for Floating Nav */}
+                <div className="h-20"></div>
+            </div>
+          </>
+        )}
 
-      {view === 'listing' && (
-        <ProductListingPage 
-           title={selectedCategoryTitle} 
-           onBack={handleBack}
-           cartItems={cartItems}
-           onUpdateQuantity={handleUpdateQuantity}
-           onProductClick={navigateToDetails}
-           products={products}
-           onSearchClick={handleSearchClick}
-        />
-      )}
+        {view === 'listing' && (
+          <ProductListingPage 
+            title={selectedCategoryTitle} 
+            onBack={handleBack}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onProductClick={navigateToDetails}
+            products={products}
+            onSearchClick={handleSearchClick}
+          />
+        )}
 
-      {view === 'details' && selectedProduct && (
-        <ProductDetailsPage 
-           product={selectedProduct} 
-           onBack={handleBack}
-           cartItems={cartItems}
-           onUpdateQuantity={handleUpdateQuantity}
-           onProductClick={navigateToDetails}
-           products={products}
-           onSearchClick={handleSearchClick}
-        />
-      )}
+        {view === 'details' && selectedProduct && (
+          <ProductDetailsPage 
+            product={selectedProduct} 
+            onBack={handleBack}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onProductClick={navigateToDetails}
+            products={products}
+            onSearchClick={handleSearchClick}
+          />
+        )}
 
-      {(view === 'cart' || view === 'address') && (
-        <CartPage 
-           onBack={handleBack}
-           cartItems={cartItems}
-           onUpdateQuantity={handleUpdateQuantity}
-           onPlaceOrder={handlePlaceOrder}
-           products={products}
-           onAddressSave={handleAddressSave}
-           initialStep={view === 'address' ? 'address' : 'cart'}
-        />
-      )}
+        {(view === 'cart' || view === 'address') && (
+          <CartPage 
+            onBack={handleBack}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onPlaceOrder={handlePlaceOrder}
+            products={products}
+            onAddressSave={handleAddressSave}
+            initialStep={view === 'address' ? 'address' : 'cart'}
+          />
+        )}
 
-      {view === 'orders' && (
-        <OrdersPage 
-           orders={orders}
-           products={products}
-           onBack={handleBack}
-           onReorder={(order) => {
-               setCartItems(prev => {
-                   const newCart = { ...prev };
-                   order.items.forEach(item => {
-                       newCart[item.productId] = (newCart[item.productId] || 0) + item.quantity;
-                   });
-                   return newCart;
-               });
-               navigateToCart();
-           }}
-           onTrackOrder={navigateToTracking}
-           onProductClick={navigateToDetails}
-        />
-      )}
-
-      {view === 'tracking' && selectedOrder && (
-         <TrackingPage 
-            order={selectedOrder}
+        {view === 'orders' && (
+          <OrdersPage 
+            orders={orders}
             products={products}
             onBack={handleBack}
+            onReorder={(order) => {
+                setCartItems(prev => {
+                    const newCart = { ...prev };
+                    order.items.forEach(item => {
+                        newCart[item.productId] = (newCart[item.productId] || 0) + item.quantity;
+                    });
+                    return newCart;
+                });
+                navigateToCart();
+            }}
+            onTrackOrder={navigateToTracking}
             onProductClick={navigateToDetails}
-         />
-      )}
+          />
+        )}
 
-      {view === 'categories' && (
-        <CategoriesPage 
-           onBack={handleBack}
-           onCategoryClick={navigateToListing}
-           onSearchClick={handleSearchClick}
+        {view === 'tracking' && selectedOrder && (
+          <TrackingPage 
+              order={selectedOrder}
+              products={products}
+              onBack={handleBack}
+              onProductClick={navigateToDetails}
+          />
+        )}
+
+        {view === 'categories' && (
+          <CategoriesPage 
+            onBack={handleBack}
+            onCategoryClick={navigateToListing}
+            onSearchClick={handleSearchClick}
+          />
+        )}
+
+        {/* FLOATING GREEN CART BAR (Visible only when items exist and NOT in Cart/Checkout page) */}
+        {totalItems > 0 && view !== 'cart' && view !== 'address' && (
+          <ViewCartStickyBar 
+              itemCount={totalItems} 
+              totalPrice={cartTotalPrice} 
+              onViewCart={navigateToCart} 
+          />
+        )}
+
+        {/* FOOTER: Always Visible on Authenticated Pages */}
+        <Footer 
+          cartCount={totalItems} 
+          activeTab={activeFooterTab} 
+          onTabSelect={(tab) => {
+              if(tab === 'home') navigateToHome();
+              if(tab === 'categories') navigateToCategories();
+              if(tab === 'orders') navigateToOrders();
+              if(tab === 'cart') navigateToCart();
+          }} 
         />
+      </>
       )}
-
-      {/* FLOATING GREEN CART BAR (Visible only when items exist and NOT in Cart/Checkout page) */}
-      {totalItems > 0 && view !== 'cart' && view !== 'address' && (
-         <ViewCartStickyBar 
-            itemCount={totalItems} 
-            totalPrice={cartTotalPrice} 
-            onViewCart={navigateToCart} 
-         />
-      )}
-
-      {/* FOOTER: Always Visible on Authenticated Pages */}
-      <Footer 
-        cartCount={totalItems} 
-        activeTab={activeFooterTab} 
-        onTabSelect={(tab) => {
-            if(tab === 'home') navigateToHome();
-            if(tab === 'categories') navigateToCategories();
-            if(tab === 'orders') navigateToOrders();
-            if(tab === 'cart') navigateToCart();
-        }} 
-      />
+    </div>
     </div>
   );
 };

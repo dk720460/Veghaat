@@ -22,7 +22,7 @@ const Footer: React.FC<FooterProps> = ({ cartCount, activeTab, onTabSelect }) =>
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 h-16 flex items-center justify-between px-2 z-[100] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-200 h-16 flex items-center justify-between px-2 z-[100] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
       
       <button onClick={() => onTabSelect('home')} className={getButtonClass('home')}>
         <Home size={22} strokeWidth={activeTab === 'home' ? 2.5 : 2} />

@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface ExitModalProps {
@@ -11,7 +10,7 @@ const ExitModal: React.FC<ExitModalProps> = ({ isOpen, onClose, onConfirm }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-2xl animate-scale-up text-center">
         <h3 className="text-lg font-bold text-gray-900 mb-2">Exit App?</h3>
         <p className="text-sm text-gray-500 mb-6">Are you sure you want to close VegHaat?</p>

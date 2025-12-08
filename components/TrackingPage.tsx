@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
-import { ArrowLeft, Phone, MessageSquare, MapPin, Clock, ChevronDown, ChevronUp, XCircle, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, Phone, MessageSquare, MapPin, Clock, ChevronDown, ChevronUp, XCircle, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { Order, Product } from '../types';
@@ -52,6 +51,7 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
 
   const isCancelled = currentStatusNormalized === 'Cancelled';
   const isReturned = currentStatusNormalized === 'Returned';
+  const showDeliveryPartner = !isCancelled && !isReturned && (currentStatusNormalized === 'Out for Delivery' || currentStatusNormalized === 'Delivered');
 
   // UI Timeline Steps
   const STATUS_STEPS = ['Placed', 'Processing', 'Confirmed', 'Packing', 'Out for Delivery', 'Delivered'];
@@ -64,7 +64,7 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
           case 'Confirmed': return { percent: 35, eta: '20 mins' }; 
           case 'Packing': return { percent: 60, eta: '18 mins' }; 
           case 'Out for Delivery': return { percent: 85, eta: '15 mins' }; 
-          case 'Delivered': return { percent: 100, eta: '0 mins' }; 
+          case 'Delivered': return { percent: 100, eta: 'Arrived' }; 
           default: return { percent: 10, eta: '20 mins' };
       }
   };
@@ -89,6 +89,7 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
 
     const cy = 3 * (p1.y - p0.y);
     const by = 3 * (p2.y - p1.y) - cy;
+    const by_2 = 3 * (p2.y - p1.y) - cy; // Fix TS warning by renaming or reusing logic if identical
     const ay = p3.y - p0.y - cy - by;
 
     const x = (ax * Math.pow(t, 3)) + (bx * Math.pow(t, 2)) + (cx * t) + p0.x;
@@ -106,8 +107,15 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
       }
   };
 
+  // Safe phone link generator
+  const getPhoneLink = (phone?: string) => {
+      if (!phone) return '#';
+      // Remove spaces, dashes, brackets to make it a valid tel link
+      return `tel:${phone.replace(/[^\d+]/g, '')}`;
+  };
+
   return (
-    <div className="fixed inset-0 z-[70] bg-[#F5F7FD] flex flex-col h-full animate-slide-in-right">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[70] bg-[#F5F7FD] flex flex-col h-full animate-slide-in-right">
       {/* Header */}
       <div className="bg-white px-4 py-3 flex items-center space-x-3 sticky top-0 z-10 border-b border-gray-100 shadow-sm">
         <button onClick={onBack} className="p-3 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
@@ -207,43 +215,49 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
               <div>
                  <p className="text-[10px] text-gray-500 font-bold uppercase">Estimated Arrival</p>
                  <p className="text-sm font-black text-gray-800 transition-all">
-                    {currentStatusNormalized === 'Delivered' ? 'Arrived' : eta}
+                    {eta}
                  </p>
               </div>
            </div>
         </div>
         )}
 
-        {/* Delivery Partner Info */}
-        {!isCancelled && !isReturned && (currentStatusNormalized === 'Out for Delivery' || currentStatusNormalized === 'Delivered') && (
+        {/* Delivery Partner Info - ONLY SHOWS IF Out for Delivery OR Delivered */}
+        {showDeliveryPartner && (
         <div className="bg-white p-4 mb-2 shadow-sm animate-fade-in border-b border-gray-100">
            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center border border-yellow-200 overflow-hidden">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4825/4825038.png" alt="Rider" className="w-full h-full object-cover"/>
+                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center border border-yellow-200 overflow-hidden relative">
+                    <img 
+                        src="https://cdn-icons-png.flaticon.com/512/4825/4825038.png" 
+                        alt="Rider" 
+                        className="w-full h-full object-cover"
+                    />
                  </div>
                  <div>
-                    <h3 className="text-sm font-bold text-gray-900">
+                    <h3 className="text-sm font-bold text-gray-900 leading-tight">
                         {liveOrder.deliveryBoyName || 'Delivery Partner'}
                     </h3>
                     <p className="text-xs text-gray-500">Your Delivery Partner</p>
-                    <div className="flex items-center space-x-1 mt-0.5">
-                       <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded font-bold">4.8 ★</span>
-                       <span className="text-[10px] text-gray-400">• Vaccinated</span>
+                    <div className="flex items-center space-x-1 mt-1">
+                       <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded font-bold flex items-center">
+                         4.8 ★
+                       </span>
+                       <span className="text-[10px] text-gray-400 flex items-center">
+                          <ShieldCheck size={10} className="mr-0.5 text-green-600"/> Vaccinated
+                       </span>
                     </div>
                  </div>
               </div>
               
               <div className="flex space-x-3">
-                 <button className="w-10 h-10 rounded-full border border-green-200 flex items-center justify-center text-green-600 hover:bg-green-50 transition-colors">
-                    <MessageSquare size={20} />
-                 </button>
+                 {/* Call Button */}
                  {liveOrder.deliveryBoyPhone ? (
                      <a 
-                       href={`tel:${liveOrder.deliveryBoyPhone}`}
-                       className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white shadow-lg shadow-green-200 hover:bg-green-700 transition-colors"
+                       href={getPhoneLink(liveOrder.deliveryBoyPhone)}
+                       className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white shadow-lg shadow-green-200 hover:bg-green-700 transition-colors animate-pulse"
                      >
-                        <Phone size={20} />
+                        <Phone size={20} fill="currentColor" />
                      </a>
                  ) : (
                      <button className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 cursor-not-allowed">
