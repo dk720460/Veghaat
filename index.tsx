@@ -7,11 +7,24 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-// CRITICAL FIX: Unregister any existing Service Workers to prevent stale cache causing White Screen
+// CRITICAL FIX: Unregister any existing Service Workers safely
+// We wrap this in a load event listener and try-catch to prevent "document invalid state" errors
+// causing the white screen of death before React even mounts.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for(let registration of registrations) {
-      registration.unregister();
+  window.addEventListener('load', () => {
+    try {
+        navigator.serviceWorker.getRegistrations()
+            .then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister()
+                        .catch(err => console.warn("SW unregister error", err));
+                }
+            })
+            .catch(function(err) {
+                console.warn("SW getRegistrations error", err);
+            });
+    } catch (e) {
+        console.warn("ServiceWorker cleanup exception", e);
     }
   });
 }
@@ -26,11 +39,10 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary to catch crashes
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = { hasError: false, error: null };
-
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
