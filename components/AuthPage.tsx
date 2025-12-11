@@ -17,7 +17,11 @@ declare global {
   }
 }
 
-const AuthPage: React.FC = () => {
+interface AuthPageProps {
+    onBack: () => void;
+}
+
+const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   // --- STATE ---
   const [step, setStep] = useState<AuthStep>('LANDING');
   const [mode, setMode] = useState<AuthMode>('LOGIN'); 
@@ -289,7 +293,7 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FD] flex flex-col items-center justify-center p-4">
+    <div className="fixed inset-x-0 top-0 bottom-0 mx-auto max-w-[480px] z-[80] bg-[#F5F7FD] flex flex-col items-center justify-center p-4">
       <div id="recaptcha-container"></div>
 
       <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl overflow-hidden animate-scale-up border border-gray-100 relative">
@@ -304,6 +308,9 @@ const AuthPage: React.FC = () => {
         {step === 'LANDING' && (
             <div className="flex flex-col h-full">
                 <div className="bg-green-600 p-8 text-center relative overflow-hidden flex flex-col justify-center items-center h-48">
+                     <button onClick={onBack} className="absolute top-4 left-4 p-2 bg-white/20 rounded-full text-white hover:bg-white/30 z-20">
+                        <ArrowLeft size={20} />
+                     </button>
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg animate-bounce">
                         <Phone className="text-green-600" size={28} />
                     </div>

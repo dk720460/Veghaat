@@ -28,6 +28,7 @@ import CartPage from './components/CartPage';
 import OrdersPage from './components/OrdersPage';
 import CategoriesPage from './components/CategoriesPage';
 import TrackingPage from './components/TrackingPage';
+import AuthPage from './components/AuthPage';
 
 const App: React.FC = () => {
   // --- SPLASH SCREEN STATE ---
@@ -41,7 +42,7 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
 
   // --- NAVIGATION STATE ---
-  const [view, setView] = useState<'home' | 'listing' | 'details' | 'cart' | 'orders' | 'categories' | 'tracking' | 'address'>('home');
+  const [view, setView] = useState<'home' | 'listing' | 'details' | 'cart' | 'orders' | 'categories' | 'tracking' | 'address' | 'auth'>('home');
   
   // UI State
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -129,6 +130,12 @@ const App: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
           setUser(currentUser);
+          // If we are in auth view and user logs in, redirect to home
+          if (viewRef.current === 'auth') {
+             setView('home');
+             setActiveFooterTab('home');
+          }
+
           const userRef = ref(db, `users/${currentUser.uid}`);
           try {
               const snapshot = await get(userRef);
@@ -437,6 +444,7 @@ const App: React.FC = () => {
     if (item === 'orders') navigateToOrders();
     else if (item === 'contact') setIsContactOpen(true);
     else if (item === 'address') navigateToAddress();
+    else if (item === 'login') pushView('auth');
     else if (item === 'logout') { 
         localStorage.removeItem('guest_uid');
         setUser(null); 
@@ -648,8 +656,14 @@ const App: React.FC = () => {
             onSearchClick={handleSearchClick}
             />
         )}
+        
+        {view === 'auth' && (
+            <AuthPage 
+                onBack={handleBack}
+            />
+        )}
 
-        {totalItems > 0 && view !== 'cart' && view !== 'address' && (
+        {totalItems > 0 && view !== 'cart' && view !== 'address' && view !== 'auth' && (
           <ViewCartStickyBar 
               itemCount={totalItems} 
               totalPrice={cartTotalPrice} 
@@ -657,16 +671,18 @@ const App: React.FC = () => {
           />
         )}
 
-        <Footer 
-          cartCount={totalItems} 
-          activeTab={activeFooterTab} 
-          onTabSelect={(tab) => {
-              if(tab === 'home') navigateToHome();
-              if(tab === 'categories') navigateToCategories();
-              if(tab === 'orders') navigateToOrders();
-              if(tab === 'cart') navigateToCart();
-          }} 
-        />
+        {view !== 'auth' && (
+            <Footer 
+            cartCount={totalItems} 
+            activeTab={activeFooterTab} 
+            onTabSelect={(tab) => {
+                if(tab === 'home') navigateToHome();
+                if(tab === 'categories') navigateToCategories();
+                if(tab === 'orders') navigateToOrders();
+                if(tab === 'cart') navigateToCart();
+            }} 
+            />
+        )}
       </>
       )}
     </div>

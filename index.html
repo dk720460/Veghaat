@@ -5,166 +5,80 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
     
-    <!-- Network Optimization: Preconnect to Image CDNs -->
+    <!-- Network Optimization -->
     <link rel="preconnect" href="https://images.unsplash.com">
-    <link rel="preconnect" href="https://i.ibb.co">
     <link rel="preconnect" href="https://cdn-icons-png.flaticon.com">
-    <link rel="dns-prefetch" href="https://images.unsplash.com">
-    <link rel="dns-prefetch" href="https://i.ibb.co">
 
     <!-- PWA & Mobile Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#F4F6F8">
-    <meta name="description" content="VegHaat - Fresh Grocery Delivery in 20 Minutes">
+    <meta name="description" content="VegHaat - Fresh Grocery Delivery">
     <link rel="manifest" href="/manifest.json">
     
     <title>VegHaat</title>
     
+    <!-- Tailwind CSS (CDN for styling) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Dancing+Script:wght@700&family=Lilita+One&display=swap" rel="stylesheet">
     
     <style>
-      /* Ensure full height to prevent white background flash */
       html, body {
         height: 100%;
         width: 100%;
         margin: 0;
         padding: 0;
-        background-color: #111827; /* Dark background for desktop to highlight app */
+        background-color: #111827;
         font-family: 'Inter', sans-serif;
         -webkit-tap-highlight-color: transparent;
-        overscroll-behavior-y: none;
       }
-
-      /* Mobile overrides */
       @media (max-width: 480px) {
-        body {
-          background-color: #F4F6F8;
-        }
+        body { background-color: #F4F6F8; }
       }
-
-      #root {
-        height: 100%;
-        width: 100%;
-      }
-
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
-          display: none;
-      }
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-      }
+      #root { height: 100%; width: 100%; }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       
-      /* Shimmer Effect for Loading */
-      @keyframes shimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-      }
-      .animate-shimmer {
-        animation: shimmer 1.5s infinite linear;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-        background-size: 200% 100%;
-      }
-
-      /* Custom Animation for Bike */
-      @keyframes bikeMove {
-        0% { left: -150px; transform: scale(0.9); }
-        35% { left: 45%; transform: scale(1); }
-        60% { left: 55%; transform: scale(1); }
-        100% { left: 120%; transform: scale(0.95); }
-      }
-      .animate-bike {
-        animation: bikeMove 5s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
-      }
-
-      /* Text Slide Up Animation */
-      @keyframes slideUpFade {
-        0% { transform: translateY(100%); opacity: 0; }
-        15% { transform: translateY(0); opacity: 1; }
-        85% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(-100%); opacity: 0; }
-      }
-      .animate-text-slide {
-        animation: slideUpFade 2.5s ease-in-out infinite;
-      }
-
-      /* Drop Animation - Aligned to Center Cart Button */
-      @keyframes dropFall {
-        0% { top: var(--start-y); left: var(--start-x); transform: scale(1); opacity: 1; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        60% { transform: scale(0.8); }
-        /* Target top calculation: 100vh - (96px bottom offset + 32px half height) = 128px from bottom */
-        100% { top: calc(100vh - 128px); left: 50%; margin-left: -25px; transform: scale(0.2); opacity: 0.5; border-radius: 50%; }
-      }
-      .animate-drop {
-        position: fixed;
-        z-index: 9999;
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border: 2px solid #FFD700; /* Golden Border */
-        background-color: white;
-        animation: dropFall 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
-        pointer-events: none;
-        border-radius: 50%;
-      }
+      /* Animations */
+      @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+      .animate-shimmer { animation: shimmer 1.5s infinite linear; background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; }
       
-      /* Impact Bubble Rising Animation */
-      @keyframes popUpRise {
-          0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
-          40% { transform: translate(-50%, -40px) scale(1.1); opacity: 1; }
-          70% { transform: translate(-50%, -50px) scale(1); opacity: 1; }
-          100% { transform: translate(-50%, -70px) scale(0.9); opacity: 0; }
-      }
+      @keyframes bikeMove { 0% { left: -150px; transform: scale(0.9); } 35% { left: 45%; transform: scale(1); } 60% { left: 55%; transform: scale(1); } 100% { left: 120%; transform: scale(0.95); } }
+      .animate-bike { animation: bikeMove 5s cubic-bezier(0.4, 0.0, 0.2, 1) infinite; }
 
-      .impact-bubble {
-          position: fixed;
-          left: 50%;
-          bottom: 128px; /* Center of the floating cart button */
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, #22c55e, #16a34a); /* Green Gradient */
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          font-size: 14px;
-          z-index: 9998;
-          box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.4);
-          animation: popUpRise 0.8s ease-out forwards;
-          pointer-events: none;
-          border: 2px solid white;
-      }
+      @keyframes slideUpFade { 0% { transform: translateY(100%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100%); opacity: 0; } }
+      .animate-text-slide { animation: slideUpFade 2.5s ease-in-out infinite; }
+
+      @keyframes dropFall { 0% { top: var(--start-y); left: var(--start-x); transform: scale(1); opacity: 1; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } 60% { transform: scale(0.8); } 100% { top: calc(100vh - 128px); left: 50%; margin-left: -25px; transform: scale(0.2); opacity: 0.5; border-radius: 50%; } }
+      .animate-drop { position: fixed; z-index: 9999; width: 50px; height: 50px; object-fit: cover; border: 2px solid #FFD700; background-color: white; animation: dropFall 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards; pointer-events: none; border-radius: 50%; }
       
-      /* Standard Animations */
+      @keyframes popUpRise { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 40% { transform: translate(-50%, -40px) scale(1.1); opacity: 1; } 70% { transform: translate(-50%, -50px) scale(1); opacity: 1; } 100% { transform: translate(-50%, -70px) scale(0.9); opacity: 0; } }
+      .impact-bubble { position: fixed; left: 50%; bottom: 128px; width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; z-index: 9998; box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.4); animation: popUpRise 0.8s ease-out forwards; pointer-events: none; border: 2px solid white; }
+      
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-
       @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       .animate-scale-up { animation: scaleUp 0.2s ease-out forwards; }
-
       @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
       .animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
-
       @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
       .animate-shake { animation: shake 0.3s ease-in-out; }
     </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "react/": "https://esm.sh/react@^19.2.1/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
+    "firebase/": "https://esm.sh/firebase@^12.6.0/",
+    "vite": "https://esm.sh/vite@^7.2.7",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
 </head>
   <body>
     <div id="root"></div>
-    <!-- Vite entry point -->
     <script type="module" src="/index.tsx"></script>
-    <script>
-      // Debug logger to catch early crashes
-      window.onerror = function(msg, url, line, col, error) {
-        console.error("Global Error:", msg, error);
-      };
-    </script>
   </body>
 </html>
+    

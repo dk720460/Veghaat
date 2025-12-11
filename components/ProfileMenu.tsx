@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Package, MapPin, Phone, FileText, Info, LogOut, X } from 'lucide-react';
+import { User, Package, MapPin, Phone, FileText, Info, LogOut, X, LogIn } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { CONTACT_INFO } from '../constants';
@@ -14,6 +14,8 @@ interface ProfileMenuProps {
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose, onSelect, user }) => {
   if (!isOpen) return null;
+
+  const isGuest = user?.isGuest;
 
   const handleLogout = async () => {
     try {
@@ -40,7 +42,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose, onSelect, us
             <h2 className="text-xl font-bold text-gray-900 line-clamp-1">
               {user?.displayName || 'VegHaat User'}
             </h2>
-            <p className="text-sm text-gray-500">{user?.email}</p>
+            <p className="text-sm text-gray-500">{user?.email || (isGuest ? 'Guest Account' : '')}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-green-100 rounded-full">
             <X size={24} className="text-green-700" />
@@ -60,13 +62,23 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose, onSelect, us
           ))}
 
           <div className="border-t border-gray-100 my-2 pt-2">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center space-x-4 p-4 rounded-xl transition-all hover:bg-red-50 text-red-600"
-            >
-              <LogOut size={20} />
-              <span className="font-medium text-lg">Logout</span>
-            </button>
+            {isGuest ? (
+                <button
+                onClick={() => onSelect('login')}
+                className="w-full flex items-center space-x-4 p-4 rounded-xl transition-all hover:bg-green-50 text-green-600"
+                >
+                <LogIn size={20} />
+                <span className="font-medium text-lg">Login / Sign Up</span>
+                </button>
+            ) : (
+                <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-4 p-4 rounded-xl transition-all hover:bg-red-50 text-red-600"
+                >
+                <LogOut size={20} />
+                <span className="font-medium text-lg">Logout</span>
+                </button>
+            )}
           </div>
         </div>
 
