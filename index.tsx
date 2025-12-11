@@ -1,6 +1,9 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode, Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import { Loader } from 'lucide-react';
+
+// Lazy load App so that import errors are caught by ErrorBoundary
+const App = lazy(() => import('./App'));
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -30,7 +33,7 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary to prevent White Screen of Death
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -47,17 +50,22 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif', marginTop: '50px' }}>
-          <h1 style={{ color: '#DC2626' }}>Something went wrong.</h1>
-          <p>Please refresh the page.</p>
-          <details style={{ whiteSpace: 'pre-wrap', marginTop: '10px', color: '#666' }}>
-            {this.state.error && this.state.error.toString()}
-          </details>
+        <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif', marginTop: '50px', backgroundColor: '#FEF2F2', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <h1 style={{ color: '#DC2626', fontSize: '24px', marginBottom: '10px' }}>Something went wrong.</h1>
+          <p style={{ color: '#4B5563', marginBottom: '20px' }}>The app encountered an error while loading.</p>
+          <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '8px', border: '1px solid #FECACA', maxWidth: '90%', overflow: 'auto', textAlign: 'left' }}>
+            <code style={{ color: '#EF4444', fontSize: '12px' }}>
+              {this.state.error && this.state.error.toString()}
+            </code>
+          </div>
           <button 
-            onClick={() => window.location.reload()} 
-            style={{ marginTop: '20px', padding: '10px 20px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px' }}
+            onClick={() => {
+                localStorage.clear(); // Clear cache as it might be the cause
+                window.location.reload();
+            }} 
+            style={{ marginTop: '25px', padding: '12px 24px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
           >
-            Refresh App
+            Clear Cache & Reload
           </button>
         </div>
       );
@@ -71,7 +79,17 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <Suspense fallback={
+        <div style={{ height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F4F6F8' }}>
+           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+             <div style={{ width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTop: '4px solid #16a34a', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+             <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+             <p style={{ marginTop: '15px', color: '#16a34a', fontWeight: 'bold', fontFamily: 'sans-serif' }}>Loading VegHaat...</p>
+           </div>
+        </div>
+      }>
+        <App />
+      </Suspense>
     </ErrorBoundary>
   </React.StrictMode>
 );

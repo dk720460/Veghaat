@@ -69,20 +69,35 @@ const App: React.FC = () => {
   // Data State - Initialize with Static or Cached Data for Speed
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
   
-  // OPTIMIZATION: Initialize with LocalStorage Cache if available
+  // OPTIMIZATION: Initialize with LocalStorage Cache if available (With Error Handling)
   const [products, setProducts] = useState<Product[]>(() => {
-    const cached = localStorage.getItem('products_cache');
-    return cached ? JSON.parse(cached) : SEARCH_ITEMS;
+    try {
+      const cached = localStorage.getItem('products_cache');
+      return cached ? JSON.parse(cached) : SEARCH_ITEMS;
+    } catch (e) {
+      console.warn("Error parsing products cache", e);
+      return SEARCH_ITEMS;
+    }
   });
   
   const [banners, setBanners] = useState<Banner[]>(() => {
-    const cached = localStorage.getItem('banners_cache');
-    return cached ? JSON.parse(cached) : STATIC_BANNERS;
+    try {
+      const cached = localStorage.getItem('banners_cache');
+      return cached ? JSON.parse(cached) : STATIC_BANNERS;
+    } catch (e) {
+      console.warn("Error parsing banners cache", e);
+      return STATIC_BANNERS;
+    }
   });
 
   const [sections, setSections] = useState<MainSection[]>(() => {
-    const cached = localStorage.getItem('sections_cache');
-    return cached ? JSON.parse(cached) : STATIC_SECTIONS;
+    try {
+      const cached = localStorage.getItem('sections_cache');
+      return cached ? JSON.parse(cached) : STATIC_SECTIONS;
+    } catch (e) {
+      console.warn("Error parsing sections cache", e);
+      return STATIC_SECTIONS;
+    }
   });
 
   const [orders, setOrders] = useState<Order[]>([]);
