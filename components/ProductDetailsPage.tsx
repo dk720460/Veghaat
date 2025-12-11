@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Share2, Heart, Clock, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
 import { Product } from '../types';
+import ImageWithLoader from './ImageWithLoader';
 
 interface ProductDetailsPageProps {
   product: Product;
@@ -106,13 +107,11 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
          >
             {images.map((img, idx) => (
                 <div key={idx} className="w-full h-full flex-shrink-0 flex items-center justify-center p-6 bg-white">
-                    <img 
-                      src={img} 
-                      alt={`${product.name} ${idx}`} 
-                      className="w-full h-full object-contain" 
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/1147/1147805.png';
-                      }}
+                    <ImageWithLoader 
+                        src={img} 
+                        alt={`${product.name} ${idx}`} 
+                        containerClassName="w-full h-full flex items-center justify-center"
+                        className="max-w-full max-h-full object-contain"
                     />
                 </div>
             ))}
@@ -250,7 +249,12 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
                return (
                <div key={item.id} className="min-w-[140px] w-[140px] bg-white rounded-xl border border-gray-100 p-2 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
                   <div onClick={() => onProductClick(item)} className="relative h-24 mb-2 cursor-pointer bg-white rounded-lg flex items-center justify-center">
-                     <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                     <ImageWithLoader 
+                        src={item.image} 
+                        alt={item.name} 
+                        containerClassName="w-full h-full"
+                        className="w-full h-full object-contain"
+                    />
                   </div>
                   <div>
                      <p className="text-[10px] text-gray-500 mb-0.5">{item.eta || '20 MINS'}</p>

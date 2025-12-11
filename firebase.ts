@@ -1,7 +1,7 @@
 
-import { initializeApp } from 'firebase/app';
-import { getDatabase } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
 
 // Configuration based on your google-services.json
 const firebaseConfig = {
@@ -15,9 +15,13 @@ const firebaseConfig = {
   measurementId: "G-2SLQSVYFEX"
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getDatabase(app);
-export const auth = getAuth(app);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+export const db = firebase.database();
+export const auth = firebase.auth();
+export default firebase;
 
 // Enable language localization for SMS templates
 auth.useDeviceLanguage();

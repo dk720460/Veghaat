@@ -1,6 +1,6 @@
+
 import React from 'react';
 import { User, Package, MapPin, Phone, FileText, Info, LogOut, X } from 'lucide-react';
-import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { CONTACT_INFO } from '../constants';
 
@@ -16,7 +16,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose, onSelect, us
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await auth.signOut();
       onSelect('logout');
     } catch (error) {
       console.error("Error signing out: ", error);

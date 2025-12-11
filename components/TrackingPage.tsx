@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { ArrowLeft, Phone, MapPin, Clock, ChevronDown, ChevronUp, XCircle, RefreshCcw, ShieldCheck } from 'lucide-react';
-import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { Order, Product } from '../types';
 
@@ -19,15 +18,19 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
 
   // Listen for Realtime Updates from Firebase
   useEffect(() => {
-    const orderRef = ref(db, `orders/${order.id}`);
-    const unsubscribe = onValue(orderRef, (snapshot) => {
+    const orderRef = db.ref(`orders/${order.id}`);
+    const handleValue = (snapshot: any) => {
         const data = snapshot.val();
         if (data) {
             setLiveOrder(data);
         }
-    });
+    };
+    
+    orderRef.on('value', handleValue);
 
-    return () => unsubscribe();
+    return () => {
+        orderRef.off('value', handleValue);
+    };
   }, [order.id]);
 
   // --- STATUS NORMALIZATION LOGIC ---

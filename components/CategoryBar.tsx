@@ -58,17 +58,18 @@ const CategoryBar: React.FC<CategoryBarProps> = ({ activeCategory, onSelectCateg
 
   return (
     <div className="bg-white pb-2 pt-2 border-t border-gray-100">
-      <div className="flex overflow-x-auto no-scrollbar px-4 space-x-5 py-1 items-start">
+      <div className="flex overflow-x-auto no-scrollbar px-4 space-x-4 py-1 items-start">
         {quickCategories.map((cat) => {
           const isActive = activeCategory === cat.id;
           
           return (
             <button 
               key={cat.id} 
-              className="flex-shrink-0 flex flex-col items-center space-y-2 group min-w-[64px]"
+              className="flex-shrink-0 flex flex-col items-center space-y-1.5 group min-w-[50px]"
               onClick={() => onSelectCategory(cat.id, cat.target)}
             >
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm relative overflow-hidden ${cat.bgColor} ${
+              {/* Reduced size: w-16 -> w-11 (approx 30% less) */}
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm relative overflow-hidden ${cat.bgColor} ${
                   isActive 
                   ? 'ring-2 ring-green-500 scale-105' 
                   : 'hover:shadow-md'
@@ -81,7 +82,7 @@ const CategoryBar: React.FC<CategoryBarProps> = ({ activeCategory, onSelectCateg
                     useSkeleton={false}
                  />
               </div>
-              <span className={`text-[11px] font-bold text-center leading-tight w-full truncate ${
+              <span className={`text-[9px] font-bold text-center leading-tight w-full truncate ${
                   isActive ? 'text-green-700' : 'text-gray-700'
               }`}>
                 {cat.label}

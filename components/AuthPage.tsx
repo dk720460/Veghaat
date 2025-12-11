@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-import { ref, get, set } from 'firebase/database';
+import firebase from '../firebase'; // Import main firebase namespace
 import { auth, db } from '../firebase';
 import { Loader, ArrowRight, Phone, ShieldCheck, User, MapPin, AlertTriangle, ArrowLeft, LogIn, UserPlus, HelpCircle, Mail, Home } from 'lucide-react';
 import { APP_NAME, TAGLINE } from '../constants';
@@ -13,7 +12,7 @@ type AuthStep = 'LANDING' | 'PHONE_INPUT' | 'OTP_VERIFY' | 'REGISTER_DETAILS';
 // Extend window interface to handle global recaptcha verifier
 declare global {
   interface Window {
-    recaptchaVerifier: RecaptchaVerifier | undefined;
+    recaptchaVerifier: firebase.auth.RecaptchaVerifier | undefined;
   }
 }
 
@@ -37,7 +36,7 @@ const AuthPage: React.FC = () => {
   const [pincode, setPincode] = useState('');
   
   // Firebase Data
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [confirmationResult, setConfirmationResult] = useState<firebase.auth.ConfirmationResult | null>(null);
   
   // Timer for OTP
   const [timer, setTimer] = useState(30);
@@ -119,7 +118,8 @@ const AuthPage: React.FC = () => {
     container.innerHTML = '';
 
     try {
-        const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        // Use firebase.auth.RecaptchaVerifier via namespace
+        const verifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
             'size': 'invisible',
             'callback': (response: any) => {
                 // ReCAPTCHA solved
@@ -157,7 +157,7 @@ const AuthPage: React.FC = () => {
       }
 
       const formatPh = `+91${phoneNumber}`;
-      const confirmation = await signInWithPhoneNumber(auth, formatPh, appVerifier);
+      const confirmation = await auth.signInWithPhoneNumber(formatPh, appVerifier);
       
       setConfirmationResult(confirmation);
       setStep('OTP_VERIFY');
@@ -212,8 +212,8 @@ const AuthPage: React.FC = () => {
         const user = result.user;
         
         // Check User Existence in DB
-        const userRef = ref(db, `users/${user.uid}`);
-        const snapshot = await get(userRef);
+        const userRef = db.ref(`users/${user?.uid}`);
+        const snapshot = await userRef.once('value');
         const userExists = snapshot.exists();
 
         if (mode === 'LOGIN') {
@@ -222,7 +222,7 @@ const AuthPage: React.FC = () => {
             } else {
                 // Not a registered user -> Cleanup and force Register
                 // Optional: You might want to allow auto-register here, but respecting mode:
-                await user.delete().catch(() => {}); 
+                await user?.delete().catch(() => {}); 
                 setError("Account not found. Please Create Account.");
                 setStep('LANDING'); 
             }
@@ -240,7 +240,7 @@ const AuthPage: React.FC = () => {
                  // Recovery logic usually handled by just logging in
                  // For now, treat as login success
              } else {
-                 await user.delete().catch(() => {});
+                 await user?.delete().catch(() => {});
                  setError("No account found to recover.");
                  setStep('LANDING');
              }
@@ -266,7 +266,7 @@ const AuthPage: React.FC = () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
           try {
-            await set(ref(db, `users/${currentUser.uid}`), {
+            await db.ref(`users/${currentUser.uid}`).set({
                 phone: phoneNumber,
                 name: fullName,
                 email: email,
