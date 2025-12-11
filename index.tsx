@@ -1,24 +1,28 @@
-
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error("Could not find root element");
 
-// Service Worker Cleanup
+// Service Worker Registration for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(reg => reg.unregister());
-    }).catch(err => console.warn("SW Error", err));
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('SW registered: ', registration);
+      })
+      .catch(err => {
+        // Suppress benign errors, or log them
+        console.log('SW registration skipped or failed: ', err);
+      });
   });
 }
 
 interface Props { children?: ReactNode; }
 interface State { hasError: boolean; error: Error | null; }
 
-class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   public state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -52,4 +56,3 @@ root.render(
     </ErrorBoundary>
   </React.StrictMode>
 );
-    

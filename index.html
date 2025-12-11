@@ -1,24 +1,21 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
     
-    <!-- Network Optimization -->
-    <link rel="preconnect" href="https://images.unsplash.com">
-    <link rel="preconnect" href="https://cdn-icons-png.flaticon.com">
-
-    <!-- PWA & Mobile Meta Tags -->
-    <meta name="theme-color" content="#F4F6F8">
-    <meta name="description" content="VegHaat - Fresh Grocery Delivery">
+    <!-- SEO & PWA -->
+    <title>VegHaat - Fresh Grocery in 20 Mins</title>
+    <meta name="description" content="Order fresh vegetables, fruits, and daily essentials. Delivered in 20 minutes.">
+    <meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="/manifest.json">
-    
-    <title>VegHaat</title>
-    
-    <!-- Tailwind CSS (CDN for styling) -->
+    <link rel="apple-touch-icon" href="/icon-192.png">
+
+    <!-- Fonts & Styles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lilita+One&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Dancing+Script:wght@700&family=Lilita+One&display=swap" rel="stylesheet">
     
     <style>
       html, body {
@@ -26,18 +23,54 @@
         width: 100%;
         margin: 0;
         padding: 0;
-        background-color: #111827;
+        background-color: #f3f4f6; /* Light gray background like Blinkit */
         font-family: 'Inter', sans-serif;
         -webkit-tap-highlight-color: transparent;
+        overflow-x: hidden;
       }
-      @media (max-width: 480px) {
-        body { background-color: #F4F6F8; }
+      #root {
+        height: 100%;
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        min-height: 100vh;
+        position: relative;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
       }
-      #root { height: 100%; width: 100%; }
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       
-      /* Animations */
+      /* Initial Loader Styles (Prevents White Screen) */
+      #initial-loader {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #ffffff;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #16a34a; /* Green-600 */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      .brand-text {
+        margin-top: 16px;
+        font-family: 'Lilita One', cursive;
+        font-size: 24px;
+        color: #16a34a;
+        letter-spacing: 1px;
+      }
+
+      /* App Animations */
       @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
       .animate-shimmer { animation: shimmer 1.5s infinite linear; background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; }
       
@@ -47,11 +80,11 @@
       @keyframes slideUpFade { 0% { transform: translateY(100%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100%); opacity: 0; } }
       .animate-text-slide { animation: slideUpFade 2.5s ease-in-out infinite; }
 
-      @keyframes dropFall { 0% { top: var(--start-y); left: var(--start-x); transform: scale(1); opacity: 1; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } 60% { transform: scale(0.8); } 100% { top: calc(100vh - 128px); left: 50%; margin-left: -25px; transform: scale(0.2); opacity: 0.5; border-radius: 50%; } }
-      .animate-drop { position: fixed; z-index: 9999; width: 50px; height: 50px; object-fit: cover; border: 2px solid #FFD700; background-color: white; animation: dropFall 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards; pointer-events: none; border-radius: 50%; }
+      @keyframes dropFall { 0% { top: var(--start-y); left: var(--start-x); transform: scale(1); opacity: 1; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } 60% { transform: scale(0.8); } 100% { top: calc(100vh - 80px); left: 50%; margin-left: -25px; transform: scale(0.2); opacity: 0.5; border-radius: 50%; } }
+      .animate-drop { position: fixed; z-index: 9999; width: 50px; height: 50px; object-fit: cover; border: 2px solid #FFD700; background-color: white; animation: dropFall 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards; pointer-events: none; border-radius: 50%; }
       
       @keyframes popUpRise { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 40% { transform: translate(-50%, -40px) scale(1.1); opacity: 1; } 70% { transform: translate(-50%, -50px) scale(1); opacity: 1; } 100% { transform: translate(-50%, -70px) scale(0.9); opacity: 0; } }
-      .impact-bubble { position: fixed; left: 50%; bottom: 128px; width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; z-index: 9998; box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.4); animation: popUpRise 0.8s ease-out forwards; pointer-events: none; border: 2px solid white; }
+      .impact-bubble { position: fixed; left: 50%; bottom: 80px; width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; z-index: 9998; box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.4); animation: popUpRise 0.8s ease-out forwards; pointer-events: none; border: 2px solid white; }
       
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
@@ -77,8 +110,29 @@
 </script>
 </head>
   <body>
+    <!-- Immediate Loader (Prevents White Screen) -->
+    <div id="initial-loader">
+      <div class="spinner"></div>
+      <div class="brand-text">VegHaat</div>
+    </div>
+
     <div id="root"></div>
+    
+    <!-- Module Script -->
     <script type="module" src="/index.tsx"></script>
+    
+    <!-- Remove Loader when React mounts -->
+    <script>
+      window.onload = function() {
+        const loader = document.getElementById('initial-loader');
+        if(loader) {
+          // Give React a moment to render
+          setTimeout(() => {
+             loader.style.opacity = '0';
+             setTimeout(() => { loader.style.display = 'none'; }, 500);
+          }, 800);
+        }
+      };
+    </script>
   </body>
 </html>
-    

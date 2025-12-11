@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { ArrowLeft, Phone, MapPin, Clock, ChevronDown, ChevronUp, XCircle, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { ref, onValue } from 'firebase/database';
@@ -247,4 +246,3 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
 };
 
 export default TrackingPage;
-    
