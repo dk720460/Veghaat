@@ -17,7 +17,7 @@ if ('serviceWorker' in navigator) {
 interface Props { children?: ReactNode; }
 interface State { hasError: boolean; error: Error | null; }
 
-class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   public state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {

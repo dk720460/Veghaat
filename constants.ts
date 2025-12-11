@@ -1,5 +1,4 @@
 
-
 import { MainSection, Banner, Product } from './types';
 
 export const APP_NAME = "VegHaat";
