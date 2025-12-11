@@ -1,30 +1,23 @@
-import React, { Component, ErrorInfo, ReactNode, Suspense, lazy } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Loader } from 'lucide-react';
-
-// Lazy load App so that import errors are caught by ErrorBoundary
-const App = lazy(() => import('./App'));
+import App from './App';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-// Service Worker Registration
+// CRITICAL FIX: Unregister any existing Service Workers to prevent stale cache causing White Screen
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('SW registered: ', registration);
-      })
-      .catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-      });
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister();
+    }
   });
 }
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -32,11 +25,12 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-// Error Boundary to prevent White Screen of Death
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+// Error Boundary to catch crashes
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState = { hasError: false, error: null };
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -50,23 +44,53 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif', marginTop: '50px', backgroundColor: '#FEF2F2', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <h1 style={{ color: '#DC2626', fontSize: '24px', marginBottom: '10px' }}>Something went wrong.</h1>
-          <p style={{ color: '#4B5563', marginBottom: '20px' }}>The app encountered an error while loading.</p>
-          <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '8px', border: '1px solid #FECACA', maxWidth: '90%', overflow: 'auto', textAlign: 'left' }}>
-            <code style={{ color: '#EF4444', fontSize: '12px' }}>
-              {this.state.error && this.state.error.toString()}
-            </code>
+        <div style={{ 
+          height: '100vh', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          backgroundColor: '#F5F7FD', 
+          color: '#1F2937',
+          padding: '20px',
+          textAlign: 'center',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          <div style={{ marginBottom: '20px' }}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <circle cx="12" cy="12" r="10"></circle>
+               <line x1="12" y1="8" x2="12" y2="12"></line>
+               <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
           </div>
+          <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>App Failed to Load</h2>
+          <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '24px', maxWidth: '300px' }}>
+            We encountered a technical issue. Please try clearing your cache or reloading.
+          </p>
           <button 
             onClick={() => {
-                localStorage.clear(); // Clear cache as it might be the cause
+                localStorage.clear();
                 window.location.reload();
-            }} 
-            style={{ marginTop: '25px', padding: '12px 24px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+            }}
+            style={{
+              backgroundColor: '#16a34a',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}
           >
-            Clear Cache & Reload
+            Reload App
           </button>
+          {this.state.error && (
+            <div style={{ marginTop: '30px', padding: '10px', background: '#FEE2E2', borderRadius: '4px', border: '1px solid #FECACA', maxWidth: '100%', overflow: 'auto' }}>
+               <code style={{ fontSize: '10px', color: '#DC2626' }}>{this.state.error.toString()}</code>
+            </div>
+          )}
         </div>
       );
     }
@@ -79,17 +103,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <Suspense fallback={
-        <div style={{ height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F4F6F8' }}>
-           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-             <div style={{ width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTop: '4px solid #16a34a', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-             <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-             <p style={{ marginTop: '15px', color: '#16a34a', fontWeight: 'bold', fontFamily: 'sans-serif' }}>Loading VegHaat...</p>
-           </div>
-        </div>
-      }>
-        <App />
-      </Suspense>
+      <App />
     </ErrorBoundary>
   </React.StrictMode>
 );

@@ -21,13 +21,13 @@ import ViewCartStickyBar from './components/ViewCartStickyBar';
 import OfflineNotice from './components/OfflineNotice';
 import { Product, Order, Banner, MainSection } from './types';
 
-// Lazy Load Pages for Faster Initial Load
-const ProductListingPage = lazy(() => import('./components/ProductListingPage'));
-const ProductDetailsPage = lazy(() => import('./components/ProductDetailsPage'));
-const CartPage = lazy(() => import('./components/CartPage'));
-const OrdersPage = lazy(() => import('./components/OrdersPage'));
-const CategoriesPage = lazy(() => import('./components/CategoriesPage'));
-const TrackingPage = lazy(() => import('./components/TrackingPage'));
+// DIRECT IMPORT FOR CRITICAL PAGES (Fixes White Screen on slow connections)
+import ProductListingPage from './components/ProductListingPage';
+import ProductDetailsPage from './components/ProductDetailsPage';
+import CartPage from './components/CartPage';
+import OrdersPage from './components/OrdersPage';
+import CategoriesPage from './components/CategoriesPage';
+import TrackingPage from './components/TrackingPage';
 
 const App: React.FC = () => {
   // --- SPLASH SCREEN STATE ---
@@ -75,7 +75,6 @@ const App: React.FC = () => {
       const cached = localStorage.getItem('products_cache');
       return cached ? JSON.parse(cached) : SEARCH_ITEMS;
     } catch (e) {
-      console.warn("Error parsing products cache", e);
       return SEARCH_ITEMS;
     }
   });
@@ -85,7 +84,6 @@ const App: React.FC = () => {
       const cached = localStorage.getItem('banners_cache');
       return cached ? JSON.parse(cached) : STATIC_BANNERS;
     } catch (e) {
-      console.warn("Error parsing banners cache", e);
       return STATIC_BANNERS;
     }
   });
@@ -95,7 +93,6 @@ const App: React.FC = () => {
       const cached = localStorage.getItem('sections_cache');
       return cached ? JSON.parse(cached) : STATIC_SECTIONS;
     } catch (e) {
-      console.warn("Error parsing sections cache", e);
       return STATIC_SECTIONS;
     }
   });
@@ -106,6 +103,7 @@ const App: React.FC = () => {
 
   // --- 0. SPLASH TIMER ---
   useEffect(() => {
+    // Force splash to close even if something hangs
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 4000);
@@ -144,7 +142,7 @@ const App: React.FC = () => {
               }
           } catch (e) { console.error(e); }
       } else {
-          // GUEST MODE: Create a persistent guest session
+          // GUEST MODE
           let guestId = localStorage.getItem('guest_uid');
           if (!guestId) {
               guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -160,7 +158,6 @@ const App: React.FC = () => {
           };
           setUser(guestUser);
           
-          // Check local storage for address even for guest
           const savedAddr = localStorage.getItem('veghaat_user_address');
           if (savedAddr) {
               try {
@@ -176,65 +173,68 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. FIREBASE DATA SYNC (With Local Caching) ---
+  // --- 2. FIREBASE DATA SYNC ---
   useEffect(() => {
-    const productsRef = ref(db, 'products');
-    const unsubscribeProducts = onValue(productsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        let allProducts: Product[] = [];
-        const entries = Array.isArray(data) ? data.map((item, index) => [String(index), item]) : Object.entries(data);
+    try {
+        const productsRef = ref(db, 'products');
+        const unsubscribeProducts = onValue(productsRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            let allProducts: Product[] = [];
+            const entries = Array.isArray(data) ? data.map((item, index) => [String(index), item]) : Object.entries(data);
 
-        entries.forEach(([key, value]: [string, any]) => {
-            if (value && typeof value === 'object') {
-                 if (value.name && (value.price !== undefined || value.mrpPrice !== undefined)) {
-                     if (value.isActive !== false) allProducts.push(mapFirebaseProductToApp(key, value));
-                 } else {
-                     Object.entries(value).forEach(([childKey, childValue]: [string, any]) => {
-                         if (childValue && typeof childValue === 'object' && childValue.isActive !== false) {
-                                allProducts.push(mapFirebaseProductToApp(childKey, childValue));
-                         }
-                     });
-                 }
-            }
+            entries.forEach(([key, value]: [string, any]) => {
+                if (value && typeof value === 'object') {
+                    if (value.name && (value.price !== undefined || value.mrpPrice !== undefined)) {
+                        if (value.isActive !== false) allProducts.push(mapFirebaseProductToApp(key, value));
+                    } else {
+                        Object.entries(value).forEach(([childKey, childValue]: [string, any]) => {
+                            if (childValue && typeof childValue === 'object' && childValue.isActive !== false) {
+                                    allProducts.push(mapFirebaseProductToApp(childKey, childValue));
+                            }
+                        });
+                    }
+                }
+            });
+            setProducts(allProducts);
+            localStorage.setItem('products_cache', JSON.stringify(allProducts));
+          }
         });
-        setProducts(allProducts);
-        // Cache for next load
-        localStorage.setItem('products_cache', JSON.stringify(allProducts));
-      }
-    });
 
-    const bannersRef = ref(db, 'banners');
-    const unsubscribeBanners = onValue(bannersRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        let formattedBanners: Banner[] = [];
-        if (Array.isArray(data)) {
-            formattedBanners = data.filter(b => b).map((b, i) => ({ id: b.id || i, image: b.image || b.imageUrl || b.url || b.img || '', linkTo: b.linkTo || 'home' }));
-        } else {
-            formattedBanners = Object.entries(data).map(([key, value]: [string, any]) => ({ id: key, image: value.image || value.imageUrl || value.url || value.img || '', linkTo: value.linkTo || 'home' }));
-        }
-        const finalBanners = formattedBanners.filter(b => b.image);
-        setBanners(finalBanners);
-        localStorage.setItem('banners_cache', JSON.stringify(finalBanners));
-      }
-    });
+        const bannersRef = ref(db, 'banners');
+        const unsubscribeBanners = onValue(bannersRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            let formattedBanners: Banner[] = [];
+            if (Array.isArray(data)) {
+                formattedBanners = data.filter(b => b).map((b, i) => ({ id: b.id || i, image: b.image || b.imageUrl || b.url || b.img || '', linkTo: b.linkTo || 'home' }));
+            } else {
+                formattedBanners = Object.entries(data).map(([key, value]: [string, any]) => ({ id: key, image: value.image || value.imageUrl || value.url || value.img || '', linkTo: value.linkTo || 'home' }));
+            }
+            const finalBanners = formattedBanners.filter(b => b.image);
+            setBanners(finalBanners);
+            localStorage.setItem('banners_cache', JSON.stringify(finalBanners));
+          }
+        });
 
-    const sectionsRef = ref(db, 'sections');
-    const unsubscribeSections = onValue(sectionsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-         const newSections = Array.isArray(data) ? data : Object.values(data) as MainSection[];
-         setSections(newSections);
-         localStorage.setItem('sections_cache', JSON.stringify(newSections));
-      }
-    });
-    
-    return () => {
-        unsubscribeProducts();
-        unsubscribeBanners();
-        unsubscribeSections();
-    };
+        const sectionsRef = ref(db, 'sections');
+        const unsubscribeSections = onValue(sectionsRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const newSections = Array.isArray(data) ? data : Object.values(data) as MainSection[];
+            setSections(newSections);
+            localStorage.setItem('sections_cache', JSON.stringify(newSections));
+          }
+        });
+        
+        return () => {
+            unsubscribeProducts();
+            unsubscribeBanners();
+            unsubscribeSections();
+        };
+    } catch(e) {
+        console.error("Firebase Sync Error", e);
+    }
   }, []);
 
   const mapFirebaseProductToApp = (id: string, p: any): Product => {
@@ -259,12 +259,6 @@ const App: React.FC = () => {
       if (p.img3) imageList.push(p.img3);
       if (p.image) imageList.push(p.image);
       
-      if (p.galleryImages && typeof p.galleryImages === 'object') {
-          if (p.galleryImages.img1) imageList.push(p.galleryImages.img1);
-          if (p.galleryImages.img2) imageList.push(p.galleryImages.img2);
-          if (p.galleryImages.img3) imageList.push(p.galleryImages.img3);
-      }
-      
       const uniqueImages = Array.from(new Set(imageList)).filter(url => url?.length > 0);
       const rawCategory = p.subCategory || p.groupCategory || p.category || 'Uncategorized';
 
@@ -285,27 +279,27 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!user) { setOrders([]); return; }
-    const ordersRef = ref(db, 'orders');
-    const unsubscribe = onValue(ordersRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const allOrders = Object.values(data) as Order[];
-        setOrders(allOrders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-      } else { setOrders([]); }
-    });
-    return () => unsubscribe();
+    try {
+        const ordersRef = ref(db, 'orders');
+        const unsubscribe = onValue(ordersRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const allOrders = Object.values(data) as Order[];
+            setOrders(allOrders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+          } else { setOrders([]); }
+        });
+        return () => unsubscribe();
+    } catch(e) { console.error("Order Sync Error", e); }
   }, [user]);
 
   // --- 3. PROFESSIONAL BACK NAVIGATION LOGIC ---
   useEffect(() => {
-    // 1. Initialize History State for trapping
     if (!window.history.state || window.history.state.view !== 'home') {
         window.history.replaceState({ view: 'home' }, '');
-        window.history.pushState({ view: 'home' }, ''); // Duplicate to create a buffer
+        window.history.pushState({ view: 'home' }, ''); 
     }
 
     const handlePopState = (event: PopStateEvent) => {
-        // A. Handle Modals
         if (isProfileOpenRef.current) {
             setIsProfileOpen(false);
             window.history.pushState({ view: viewRef.current }, '');
@@ -317,14 +311,12 @@ const App: React.FC = () => {
             return;
         }
 
-        // B. Handle Home Exit Trap
         if (viewRef.current === 'home') {
              setShowExitConfirmation(true);
              window.history.pushState({ view: 'home' }, '');
              return;
         }
 
-        // C. Standard Navigation
         if (event.state && event.state.view) {
             const nextView = event.state.view;
             setView(nextView);
@@ -333,7 +325,6 @@ const App: React.FC = () => {
             if (event.state.product) setSelectedProduct(event.state.product);
             if (event.state.order) setSelectedOrder(event.state.order);
 
-            // Sync Footer
             if (nextView === 'home') setActiveFooterTab('home');
             else if (nextView === 'cart' || nextView === 'address') setActiveFooterTab('cart');
             else if (nextView === 'orders' || nextView === 'tracking') setActiveFooterTab('orders');
@@ -428,16 +419,12 @@ const App: React.FC = () => {
   const handlePlaceOrder = (newOrder: Order) => {
       if (!user) return;
       newOrder.userId = user.uid;
-      // Optimistic Update: Assume success locally first (Good for slow net)
       const newOrders = [newOrder, ...orders];
       setOrders(newOrders);
       
       set(ref(db, `orders/${newOrder.id}`), newOrder)
       .then(() => setCartItems({}))
-      .catch(err => {
-         console.error(err);
-         // Rollback if failed (Optional, but usually Firebase offline persistence handles this)
-      });
+      .catch(err => { console.error(err); });
       setCartItems({});
   };
 
@@ -589,80 +576,79 @@ const App: React.FC = () => {
           </>
         )}
 
-        <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Loader className="animate-spin text-green-600"/></div>}>
-            {view === 'listing' && (
-              <ProductListingPage 
-                title={selectedCategoryTitle} 
-                onBack={handleBack}
-                cartItems={cartItems}
-                onUpdateQuantity={handleUpdateQuantity}
-                onProductClick={navigateToDetails}
-                products={products}
-                onSearchClick={handleSearchClick}
-              />
-            )}
+        {/* REMOVED SUSPENSE TO PREVENT LOADING ISSUES */}
+        {view === 'listing' && (
+            <ProductListingPage 
+            title={selectedCategoryTitle} 
+            onBack={handleBack}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onProductClick={navigateToDetails}
+            products={products}
+            onSearchClick={handleSearchClick}
+            />
+        )}
 
-            {view === 'details' && selectedProduct && (
-              <ProductDetailsPage 
-                product={selectedProduct} 
-                onBack={handleBack}
-                cartItems={cartItems}
-                onUpdateQuantity={handleUpdateQuantity}
-                onProductClick={navigateToDetails}
-                products={products}
-                onSearchClick={handleSearchClick}
-              />
-            )}
+        {view === 'details' && selectedProduct && (
+            <ProductDetailsPage 
+            product={selectedProduct} 
+            onBack={handleBack}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onProductClick={navigateToDetails}
+            products={products}
+            onSearchClick={handleSearchClick}
+            />
+        )}
 
-            {(view === 'cart' || view === 'address') && (
-              <CartPage 
-                onBack={handleBack}
-                cartItems={cartItems}
-                onUpdateQuantity={handleUpdateQuantity}
-                onPlaceOrder={handlePlaceOrder}
-                products={products}
-                onAddressSave={handleAddressSave}
-                initialStep={view === 'address' ? 'address' : 'cart'}
-              />
-            )}
+        {(view === 'cart' || view === 'address') && (
+            <CartPage 
+            onBack={handleBack}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onPlaceOrder={handlePlaceOrder}
+            products={products}
+            onAddressSave={handleAddressSave}
+            initialStep={view === 'address' ? 'address' : 'cart'}
+            />
+        )}
 
-            {view === 'orders' && (
-              <OrdersPage 
-                orders={orders}
-                products={products}
-                onBack={handleBack}
-                onReorder={(order) => {
-                    setCartItems(prev => {
-                        const newCart = { ...prev };
-                        order.items.forEach(item => {
-                            newCart[item.productId] = (newCart[item.productId] || 0) + item.quantity;
-                        });
-                        return newCart;
+        {view === 'orders' && (
+            <OrdersPage 
+            orders={orders}
+            products={products}
+            onBack={handleBack}
+            onReorder={(order) => {
+                setCartItems(prev => {
+                    const newCart = { ...prev };
+                    order.items.forEach(item => {
+                        newCart[item.productId] = (newCart[item.productId] || 0) + item.quantity;
                     });
-                    navigateToCart();
-                }}
-                onTrackOrder={navigateToTracking}
-                onProductClick={navigateToDetails}
-              />
-            )}
+                    return newCart;
+                });
+                navigateToCart();
+            }}
+            onTrackOrder={navigateToTracking}
+            onProductClick={navigateToDetails}
+            />
+        )}
 
-            {view === 'tracking' && selectedOrder && (
-              <TrackingPage 
-                  order={selectedOrder}
-                  products={products}
-                  onBack={handleBack}
-                  onProductClick={navigateToDetails}
-              />
-            )}
-
-            {view === 'categories' && (
-              <CategoriesPage 
+        {view === 'tracking' && selectedOrder && (
+            <TrackingPage 
+                order={selectedOrder}
+                products={products}
                 onBack={handleBack}
-                onCategoryClick={navigateToListing}
-                onSearchClick={handleSearchClick}
-              />
-            )}
-        </Suspense>
+                onProductClick={navigateToDetails}
+            />
+        )}
+
+        {view === 'categories' && (
+            <CategoriesPage 
+            onBack={handleBack}
+            onCategoryClick={navigateToListing}
+            onSearchClick={handleSearchClick}
+            />
+        )}
 
         {totalItems > 0 && view !== 'cart' && view !== 'address' && (
           <ViewCartStickyBar 
