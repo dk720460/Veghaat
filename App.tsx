@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, ChevronDown, Loader, MapPin } from 'lucide-react';
 import { ref, onValue, set, get, child } from 'firebase/database';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -576,7 +576,6 @@ const App: React.FC = () => {
           </>
         )}
 
-        {/* REMOVED SUSPENSE TO PREVENT LOADING ISSUES */}
         {view === 'listing' && (
             <ProductListingPage 
             title={selectedCategoryTitle} 
