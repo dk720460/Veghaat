@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { Banner } from '../types';
+import ImageWithLoader from './ImageWithLoader';
 
 interface BannersProps {
   banners: Banner[];
@@ -38,19 +39,21 @@ const Banners: React.FC<BannersProps> = ({ banners, onBannerClick }) => {
       <div 
         ref={scrollRef}
         className="flex overflow-x-auto snap-x snap-mandatory space-x-4 no-scrollbar rounded-2xl"
+        style={{ willChange: 'scroll-position' }}
       >
         {banners.map((banner) => (
           <div 
             key={banner.id} 
             onClick={onBannerClick}
-            className="snap-center flex-shrink-0 w-full md:w-[85%] lg:w-[45%] h-48 md:h-64 relative rounded-2xl overflow-hidden shadow-md cursor-pointer group active:scale-95 transition-transform duration-200"
+            className="snap-center flex-shrink-0 w-full md:w-[85%] lg:w-[45%] h-48 md:h-64 relative rounded-2xl overflow-hidden shadow-md cursor-pointer group active:scale-95 transition-transform duration-200 bg-gray-100"
           >
-            <img 
-              src={banner.image} 
-              alt="Promo Banner" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            <ImageWithLoader 
+                src={banner.image} 
+                alt="Promo Banner" 
+                containerClassName="w-full h-full"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent flex flex-col justify-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent flex flex-col justify-end p-6 pointer-events-none">
                  <span className="bg-white text-black text-xs font-bold px-2 py-1 rounded w-max mb-2">Promoted</span>
                  <h3 className="text-white text-2xl font-bold drop-shadow-md">Super Saver Deal</h3>
                  <p className="text-gray-100 text-sm drop-shadow">Up to 50% OFF</p>

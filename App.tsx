@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { User, ChevronDown, Loader, MapPin } from 'lucide-react';
 import { ref, onValue, set, get, update } from 'firebase/database';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -12,23 +13,28 @@ import Banners from './components/Banners';
 import DeliveryAnimation from './components/DeliveryAnimation';
 import SectionList from './components/SectionList';
 import ProductRail from './components/ProductRail';
-import ProductListingPage from './components/ProductListingPage';
-import ProductDetailsPage from './components/ProductDetailsPage';
-import CartPage from './components/CartPage';
-import OrdersPage from './components/OrdersPage';
-import CategoriesPage from './components/CategoriesPage';
-import TrackingPage from './components/TrackingPage';
-import AuthPage from './components/AuthPage';
 import Footer from './components/Footer';
 import SplashScreen from './components/SplashScreen';
 import ExitModal from './components/ExitModal';
 import WelcomeHeader from './components/WelcomeHeader';
-import ViewCartStickyBar from './components/ViewCartStickyBar'; // New Component
+import ViewCartStickyBar from './components/ViewCartStickyBar';
+import OfflineNotice from './components/OfflineNotice';
 import { Product, Order, Banner, MainSection } from './types';
+
+// Lazy Load Pages for Faster Initial Load
+const ProductListingPage = lazy(() => import('./components/ProductListingPage'));
+const ProductDetailsPage = lazy(() => import('./components/ProductDetailsPage'));
+const CartPage = lazy(() => import('./components/CartPage'));
+const OrdersPage = lazy(() => import('./components/OrdersPage'));
+const CategoriesPage = lazy(() => import('./components/CategoriesPage'));
+const TrackingPage = lazy(() => import('./components/TrackingPage'));
 
 const App: React.FC = () => {
   // --- SPLASH SCREEN STATE ---
   const [showSplash, setShowSplash] = useState(true);
+
+  // --- NETWORK STATE ---
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // --- AUTH STATE ---
   const [user, setUser] = useState<any>(null);
@@ -37,7 +43,7 @@ const App: React.FC = () => {
   // --- NAVIGATION STATE ---
   const [view, setView] = useState<'home' | 'listing' | 'details' | 'cart' | 'orders' | 'categories' | 'tracking' | 'address'>('home');
   
-  // UI State - Moved up to avoid usage before declaration
+  // UI State
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
@@ -60,11 +66,25 @@ const App: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
-  // Data State
+  // Data State - Initialize with Static or Cached Data for Speed
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
-  const [products, setProducts] = useState<Product[]>(SEARCH_ITEMS);
-  const [banners, setBanners] = useState<Banner[]>(STATIC_BANNERS);
-  const [sections, setSections] = useState<MainSection[]>(STATIC_SECTIONS);
+  
+  // OPTIMIZATION: Initialize with LocalStorage Cache if available
+  const [products, setProducts] = useState<Product[]>(() => {
+    const cached = localStorage.getItem('products_cache');
+    return cached ? JSON.parse(cached) : SEARCH_ITEMS;
+  });
+  
+  const [banners, setBanners] = useState<Banner[]>(() => {
+    const cached = localStorage.getItem('banners_cache');
+    return cached ? JSON.parse(cached) : STATIC_BANNERS;
+  });
+
+  const [sections, setSections] = useState<MainSection[]>(() => {
+    const cached = localStorage.getItem('sections_cache');
+    return cached ? JSON.parse(cached) : STATIC_SECTIONS;
+  });
+
   const [orders, setOrders] = useState<Order[]>([]);
 
   const lastAddRef = useRef<number>(0);
@@ -77,12 +97,25 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // --- NETWORK LISTENER ---
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   // --- 1. AUTH & USER DATA ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      setAuthLoading(false);
       if (currentUser) {
+          setUser(currentUser);
           const userRef = ref(db, `users/${currentUser.uid}`);
           try {
               const snapshot = await get(userRef);
@@ -96,13 +129,39 @@ const App: React.FC = () => {
               }
           } catch (e) { console.error(e); }
       } else {
-          setDeliveryAddress('');
+          // GUEST MODE: Create a persistent guest session
+          let guestId = localStorage.getItem('guest_uid');
+          if (!guestId) {
+              guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+              localStorage.setItem('guest_uid', guestId);
+          }
+          
+          const guestUser = {
+              uid: guestId,
+              displayName: 'Guest',
+              phoneNumber: '',
+              email: '',
+              isGuest: true
+          };
+          setUser(guestUser);
+          
+          // Check local storage for address even for guest
+          const savedAddr = localStorage.getItem('veghaat_user_address');
+          if (savedAddr) {
+              try {
+                  const p = JSON.parse(savedAddr);
+                  if (p.flat && p.area) setDeliveryAddress(`${p.flat}, ${p.area}`);
+              } catch(e) {}
+          } else {
+              setDeliveryAddress('');
+          }
       }
+      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // --- 2. FIREBASE DATA SYNC ---
+  // --- 2. FIREBASE DATA SYNC (With Local Caching) ---
   useEffect(() => {
     onValue(ref(db, 'products'), (snapshot) => {
       const data = snapshot.val();
@@ -124,6 +183,8 @@ const App: React.FC = () => {
             }
         });
         setProducts(allProducts);
+        // Cache for next load
+        localStorage.setItem('products_cache', JSON.stringify(allProducts));
       }
     });
 
@@ -136,13 +197,19 @@ const App: React.FC = () => {
         } else {
             formattedBanners = Object.entries(data).map(([key, value]: [string, any]) => ({ id: key, image: value.image || value.imageUrl || value.url || value.img || '', linkTo: value.linkTo || 'home' }));
         }
-        setBanners(formattedBanners.filter(b => b.image));
+        const finalBanners = formattedBanners.filter(b => b.image);
+        setBanners(finalBanners);
+        localStorage.setItem('banners_cache', JSON.stringify(finalBanners));
       }
     });
 
     onValue(ref(db, 'sections'), (snapshot) => {
       const data = snapshot.val();
-      if (data) setSections(Array.isArray(data) ? data : Object.values(data) as MainSection[]);
+      if (data) {
+         const newSections = Array.isArray(data) ? data : Object.values(data) as MainSection[];
+         setSections(newSections);
+         localStorage.setItem('sections_cache', JSON.stringify(newSections));
+      }
     });
   }, []);
 
@@ -215,7 +282,6 @@ const App: React.FC = () => {
         // A. Handle Modals
         if (isProfileOpenRef.current) {
             setIsProfileOpen(false);
-            // Push current view back to history so we don't change view, just close modal
             window.history.pushState({ view: viewRef.current }, '');
             return;
         }
@@ -228,7 +294,6 @@ const App: React.FC = () => {
         // B. Handle Home Exit Trap
         if (viewRef.current === 'home') {
              setShowExitConfirmation(true);
-             // Push state back so we don't actually leave yet
              window.history.pushState({ view: 'home' }, '');
              return;
         }
@@ -247,10 +312,8 @@ const App: React.FC = () => {
             else if (nextView === 'cart' || nextView === 'address') setActiveFooterTab('cart');
             else if (nextView === 'orders' || nextView === 'tracking') setActiveFooterTab('orders');
             else if (nextView === 'categories') setActiveFooterTab('categories');
-            // Listing and Details keep prev tab or default to home/category
             else if (nextView === 'listing') setActiveFooterTab('categories');
         } else {
-            // Fallback to home if stack is lost
             setView('home');
             setActiveFooterTab('home');
         }
@@ -279,18 +342,12 @@ const App: React.FC = () => {
   const navigateToCategories = () => { pushView('categories'); setActiveFooterTab('categories'); };
   const navigateToTracking = (order: Order) => { setSelectedOrder(order); pushView('tracking', { order }); };
 
-  // Manual Back Button Handler (Top Left UI Button)
   const handleBack = () => {
-      // 1. Close Modals first if open
       if (isProfileOpen) { setIsProfileOpen(false); return; }
       if (isContactOpen) { setIsContactOpen(false); return; }
-
-      // 2. Blur any active inputs (closes keyboard)
       if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
       }
-
-      // 3. Navigation
       if (view === 'home') {
           setShowExitConfirmation(true);
       } else {
@@ -300,7 +357,7 @@ const App: React.FC = () => {
 
   const handleExitApp = () => {
     try {
-        window.history.go(-2); // Try to go back past the trap
+        window.history.go(-2); 
     } catch(e) {}
     setShowExitConfirmation(false);
   };
@@ -323,26 +380,20 @@ const App: React.FC = () => {
     });
 
     if (delta > 0) {
-       // 1. Create Drop Animation (Golden Falling product)
        const drop = document.createElement('img');
        drop.src = product.image;
-       drop.className = 'animate-drop'; // CSS in index.html makes this golden bordered
+       drop.className = 'animate-drop'; 
        drop.style.setProperty('--start-x', `${e.clientX}px`);
        drop.style.setProperty('--start-y', `${e.clientY}px`);
        document.body.appendChild(drop);
        
-       // Cleanup drop element
        setTimeout(() => drop.remove(), 550);
 
-       // 2. Create Impact Bubble Animation (Rising from bottom like Blinkit)
-       // Timing matched to when drop finishes falling
        setTimeout(() => {
            const impact = document.createElement('div');
-           impact.className = 'impact-bubble'; // CSS in index.html handles the pop-up
-           impact.innerHTML = '+1'; // Text inside bubble
+           impact.className = 'impact-bubble'; 
+           impact.innerHTML = '+1'; 
            document.body.appendChild(impact);
-           
-           // Cleanup impact element
            setTimeout(() => impact.remove(), 850);
        }, 500);
     }
@@ -351,19 +402,21 @@ const App: React.FC = () => {
   const handlePlaceOrder = (newOrder: Order) => {
       if (!user) return;
       newOrder.userId = user.uid;
+      // Optimistic Update: Assume success locally first (Good for slow net)
+      const newOrders = [newOrder, ...orders];
+      setOrders(newOrders);
+      
       set(ref(db, `orders/${newOrder.id}`), newOrder)
       .then(() => setCartItems({}))
-      .catch(err => console.error(err));
+      .catch(err => {
+         console.error(err);
+         // Rollback if failed (Optional, but usually Firebase offline persistence handles this)
+      });
+      setCartItems({});
   };
 
   const handleAddressSave = (addressString: string) => {
       setDeliveryAddress(addressString);
-      if (user) {
-         update(ref(db, `users/${user.uid}/address`), { 
-             flat: addressString.split(',')[0].trim(),
-             area: addressString.split(',').slice(1).join(',').trim()
-         });
-      }
   };
 
   const handleProfileMenuSelect = (item: string) => {
@@ -371,10 +424,14 @@ const App: React.FC = () => {
     if (item === 'orders') navigateToOrders();
     else if (item === 'contact') setIsContactOpen(true);
     else if (item === 'address') navigateToAddress();
-    else if (item === 'logout') { setUser(null); setDeliveryAddress(''); navigateToHome(); }
+    else if (item === 'logout') { 
+        localStorage.removeItem('guest_uid');
+        setUser(null); 
+        setDeliveryAddress(''); 
+        navigateToHome(); 
+    }
   };
 
-  // Derived Data
   const totalItems = (Object.values(cartItems) as number[]).reduce((sum, qty) => sum + qty, 0);
   const cartTotalPrice = Object.entries(cartItems).reduce((sum, [id, qty]) => {
       const product = products.find(p => p.id === id);
@@ -388,14 +445,12 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex justify-center bg-gray-900">
-    {/* Main App Container - Centered on Desktop */}
     <div className="w-full max-w-[480px] bg-[#F4F6F8] min-h-screen relative shadow-2xl overflow-x-hidden flex flex-col">
       
       {showSplash && <SplashScreen />}
+      {!isOnline && <OfflineNotice />}
       
       {!showSplash && authLoading && <div className="h-screen w-full flex items-center justify-center bg-[#F5F5F5]"><Loader className="animate-spin text-green-600" size={32} /></div>}
-      
-      {!showSplash && !authLoading && !user && <AuthPage />}
       
       {!showSplash && !authLoading && user && (
       <>
@@ -416,8 +471,7 @@ const App: React.FC = () => {
 
         {view === 'home' && (
           <>
-            {/* FIXED HEADER (Includes Logo, Search, AND Categories) */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 bg-white shadow-sm transition-all duration-300 border-b border-gray-100 rounded-b-xl">
+            <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 bg-white shadow-sm transition-all duration-300 border-b border-gray-100 rounded-b-xl ${!isOnline ? 'mt-8' : ''}`}>
                 <header className="px-4 py-3 flex justify-between items-center">
                     <div className="flex flex-col">
                       <h1 className="text-2xl font-black text-green-600 tracking-tight flex items-center">
@@ -447,7 +501,6 @@ const App: React.FC = () => {
                 </header>
                 <SearchBar products={products} onProductClick={navigateToDetails} />
                 
-                {/* CATEGORY BAR INTEGRATED INTO HEADER */}
                 <CategoryBar 
                     activeCategory={activeCategory} 
                     onSelectCategory={(id, target) => { 
@@ -461,22 +514,12 @@ const App: React.FC = () => {
                 />
             </div>
 
-            {/* MAIN SCROLLABLE CONTENT - Increased Padding for Taller Header */}
-            <div className="pt-[240px] w-full pb-24">
-                
-                {/* 1. WELCOME HEADER (First item in scroll) */}
+            <div className={`pt-[240px] w-full pb-24 ${!isOnline ? 'pt-[270px]' : ''}`}>
                 <WelcomeHeader />
-                
-                {/* 2. BANNERS */}
                 <Banners banners={banners} onBannerClick={() => navigateToListing('Best Sellers')} />
-
-                {/* 3. DELIVERY ANIMATION */}
                 <DeliveryAnimation />
-
-                {/* 4. SECTIONS GRID */}
                 <SectionList sections={sections} onCategoryClick={navigateToListing} />
 
-                {/* 5. PRODUCT RAILS */}
                 <ProductRail 
                     title="Fresh Vegetables & Fruits" 
                     products={vegProducts} 
@@ -515,86 +558,86 @@ const App: React.FC = () => {
                     bgColor="bg-[#F8F9FA]"
                 />
                 
-                {/* Bottom Spacing for Floating Nav */}
                 <div className="h-20"></div>
             </div>
           </>
         )}
 
-        {view === 'listing' && (
-          <ProductListingPage 
-            title={selectedCategoryTitle} 
-            onBack={handleBack}
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onProductClick={navigateToDetails}
-            products={products}
-            onSearchClick={handleSearchClick}
-          />
-        )}
+        <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Loader className="animate-spin text-green-600"/></div>}>
+            {view === 'listing' && (
+              <ProductListingPage 
+                title={selectedCategoryTitle} 
+                onBack={handleBack}
+                cartItems={cartItems}
+                onUpdateQuantity={handleUpdateQuantity}
+                onProductClick={navigateToDetails}
+                products={products}
+                onSearchClick={handleSearchClick}
+              />
+            )}
 
-        {view === 'details' && selectedProduct && (
-          <ProductDetailsPage 
-            product={selectedProduct} 
-            onBack={handleBack}
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onProductClick={navigateToDetails}
-            products={products}
-            onSearchClick={handleSearchClick}
-          />
-        )}
+            {view === 'details' && selectedProduct && (
+              <ProductDetailsPage 
+                product={selectedProduct} 
+                onBack={handleBack}
+                cartItems={cartItems}
+                onUpdateQuantity={handleUpdateQuantity}
+                onProductClick={navigateToDetails}
+                products={products}
+                onSearchClick={handleSearchClick}
+              />
+            )}
 
-        {(view === 'cart' || view === 'address') && (
-          <CartPage 
-            onBack={handleBack}
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onPlaceOrder={handlePlaceOrder}
-            products={products}
-            onAddressSave={handleAddressSave}
-            initialStep={view === 'address' ? 'address' : 'cart'}
-          />
-        )}
+            {(view === 'cart' || view === 'address') && (
+              <CartPage 
+                onBack={handleBack}
+                cartItems={cartItems}
+                onUpdateQuantity={handleUpdateQuantity}
+                onPlaceOrder={handlePlaceOrder}
+                products={products}
+                onAddressSave={handleAddressSave}
+                initialStep={view === 'address' ? 'address' : 'cart'}
+              />
+            )}
 
-        {view === 'orders' && (
-          <OrdersPage 
-            orders={orders}
-            products={products}
-            onBack={handleBack}
-            onReorder={(order) => {
-                setCartItems(prev => {
-                    const newCart = { ...prev };
-                    order.items.forEach(item => {
-                        newCart[item.productId] = (newCart[item.productId] || 0) + item.quantity;
+            {view === 'orders' && (
+              <OrdersPage 
+                orders={orders}
+                products={products}
+                onBack={handleBack}
+                onReorder={(order) => {
+                    setCartItems(prev => {
+                        const newCart = { ...prev };
+                        order.items.forEach(item => {
+                            newCart[item.productId] = (newCart[item.productId] || 0) + item.quantity;
+                        });
+                        return newCart;
                     });
-                    return newCart;
-                });
-                navigateToCart();
-            }}
-            onTrackOrder={navigateToTracking}
-            onProductClick={navigateToDetails}
-          />
-        )}
+                    navigateToCart();
+                }}
+                onTrackOrder={navigateToTracking}
+                onProductClick={navigateToDetails}
+              />
+            )}
 
-        {view === 'tracking' && selectedOrder && (
-          <TrackingPage 
-              order={selectedOrder}
-              products={products}
-              onBack={handleBack}
-              onProductClick={navigateToDetails}
-          />
-        )}
+            {view === 'tracking' && selectedOrder && (
+              <TrackingPage 
+                  order={selectedOrder}
+                  products={products}
+                  onBack={handleBack}
+                  onProductClick={navigateToDetails}
+              />
+            )}
 
-        {view === 'categories' && (
-          <CategoriesPage 
-            onBack={handleBack}
-            onCategoryClick={navigateToListing}
-            onSearchClick={handleSearchClick}
-          />
-        )}
+            {view === 'categories' && (
+              <CategoriesPage 
+                onBack={handleBack}
+                onCategoryClick={navigateToListing}
+                onSearchClick={handleSearchClick}
+              />
+            )}
+        </Suspense>
 
-        {/* FLOATING GREEN CART BAR (Visible only when items exist and NOT in Cart/Checkout page) */}
         {totalItems > 0 && view !== 'cart' && view !== 'address' && (
           <ViewCartStickyBar 
               itemCount={totalItems} 
@@ -603,7 +646,6 @@ const App: React.FC = () => {
           />
         )}
 
-        {/* FOOTER: Always Visible on Authenticated Pages */}
         <Footer 
           cartCount={totalItems} 
           activeTab={activeFooterTab} 

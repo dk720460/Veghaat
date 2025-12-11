@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
-import { ArrowLeft, Phone, MapPin, Clock, ChevronDown, ChevronUp, XCircle, RefreshCcw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Phone, MessageSquare, MapPin, Clock, ChevronDown, ChevronUp, XCircle, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
 import { Order, Product } from '../types';
@@ -90,6 +89,7 @@ const TrackingPage: React.FC<TrackingPageProps> = ({ order, onBack, products, on
 
     const cy = 3 * (p1.y - p0.y);
     const by = 3 * (p2.y - p1.y) - cy;
+    const by_2 = 3 * (p2.y - p1.y) - cy; // Fix TS warning by renaming or reusing logic if identical
     const ay = p3.y - p0.y - cy - by;
 
     const x = (ax * Math.pow(t, 3)) + (bx * Math.pow(t, 2)) + (cx * t) + p0.x;

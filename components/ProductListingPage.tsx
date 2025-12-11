@@ -1,6 +1,8 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, SlidersHorizontal, ArrowUpDown, ChevronDown, Clock, Minus, Plus, Check } from 'lucide-react';
 import { Product } from '../types';
+import ImageWithLoader from './ImageWithLoader';
 
 interface ProductListingPageProps {
   title: string;
@@ -210,7 +212,12 @@ const ProductListingPage: React.FC<ProductListingPageProps> = ({
                     ? 'border-2 border-green-500 bg-white shadow-sm scale-105' 
                     : 'bg-gray-50 border border-gray-100 group-hover:border-green-200'
                 }`}>
-                  <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                  <ImageWithLoader 
+                    src={cat.image} 
+                    alt={cat.name} 
+                    containerClassName="w-full h-full"
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
                 <span className={`text-[10px] text-center font-medium leading-tight line-clamp-2 px-1 w-full ${
                     isSelected ? 'text-green-800 font-bold' : 'text-gray-500 group-hover:text-green-700'
@@ -306,10 +313,15 @@ const ProductListingPage: React.FC<ProductListingPageProps> = ({
                 <div key={item.id} className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow h-64">
                     
                     <div onClick={() => onProductClick(item)} className="cursor-pointer relative h-32 mb-2 w-full flex items-center justify-center bg-white rounded-lg overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300" />
+                        <ImageWithLoader 
+                            src={item.image} 
+                            alt={item.name} 
+                            containerClassName="w-full h-full"
+                            className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300" 
+                        />
                         
                         {/* ETA Badge on Image */}
-                         <div className="absolute bottom-1 left-1 bg-gray-100/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-gray-600 flex items-center space-x-1 shadow-sm">
+                         <div className="absolute bottom-1 left-1 bg-gray-100/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-gray-600 flex items-center space-x-1 shadow-sm z-20">
                             <Clock size={9} />
                             <span>{item.eta || '20m'}</span>
                         </div>

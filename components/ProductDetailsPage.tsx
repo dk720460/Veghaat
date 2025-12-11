@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Share2, Heart, Clock, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
 import { Product } from '../types';
@@ -33,8 +34,10 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
   // Ensure numeric price
   const price = Number(product.price);
   
-  // Images for Carousel
-  const images = product.images && product.images.length > 0 ? product.images : [product.image];
+  // Images for Carousel - Robust Check
+  const images = (product.images && product.images.length > 0) 
+    ? product.images 
+    : [product.image || 'https://cdn-icons-png.flaticon.com/512/1147/1147805.png'];
 
   // Carousel Logic
   const touchStartX = useRef(0);
@@ -90,7 +93,7 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
 
       {/* Hero Image Carousel */}
       <div 
-        className="relative w-full h-80 bg-[#F5F7FD] overflow-hidden"
+        className="relative w-full h-80 bg-white overflow-hidden"
         style={{ touchAction: 'pan-y' }} 
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -102,8 +105,15 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
             style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
          >
             {images.map((img, idx) => (
-                <div key={idx} className="w-full h-full flex-shrink-0 flex items-center justify-center p-6">
-                    <img src={img} alt={`${product.name} ${idx}`} className="w-full h-full object-contain mix-blend-multiply" />
+                <div key={idx} className="w-full h-full flex-shrink-0 flex items-center justify-center p-6 bg-white">
+                    <img 
+                      src={img} 
+                      alt={`${product.name} ${idx}`} 
+                      className="w-full h-full object-contain" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/1147/1147805.png';
+                      }}
+                    />
                 </div>
             ))}
          </div>
@@ -120,8 +130,6 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
              </div>
          )}
          
-         {/* REMOVED ABSOLUTE DISCOUNT BADGE FROM HERE */}
-
          <button className="absolute top-4 right-4 p-2 rounded-full bg-white shadow-sm text-gray-400 hover:text-red-500 z-10">
             <Heart size={24} />
          </button>
@@ -179,7 +187,6 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
                     {product.originalPrice && (
                         <span className="text-xs font-bold text-gray-400 line-through">MRP ₹{product.originalPrice}</span>
                     )}
-                    {/* NEW POSITION FOR DISCOUNT BADGE */}
                     {product.discount && (
                         <span className="bg-[#2563eb]/10 text-[#2563eb] border border-[#2563eb]/20 text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">
                             {product.discount}
@@ -187,7 +194,6 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
                     )}
                 </div>
                 <span className="text-2xl font-black text-gray-900">
-                    {/* Display Dynamic Price based on selection */}
                     ₹{selectedUnit === 1 ? price * 2 : price}
                 </span>
                 <span className="text-[10px] text-gray-500">(Incl. of all taxes)</span>
@@ -197,7 +203,6 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
              {quantity === 0 ? (
                  <button 
                    onClick={(e) => {
-                       // If 2x is selected, add 2 items
                        const qtyToAdd = selectedUnit === 1 ? 2 : 1;
                        onUpdateQuantity(e, product, qtyToAdd);
                    }}
@@ -241,11 +246,10 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({
          <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
             {similarProducts.map((item) => {
                const itemQty = cartItems[item.id] || 0;
-               // Ensure numeric price for similar items too
                const itemPrice = Number(item.price);
                return (
                <div key={item.id} className="min-w-[140px] w-[140px] bg-white rounded-xl border border-gray-100 p-2 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
-                  <div onClick={() => onProductClick(item)} className="relative h-24 mb-2 cursor-pointer">
+                  <div onClick={() => onProductClick(item)} className="relative h-24 mb-2 cursor-pointer bg-white rounded-lg flex items-center justify-center">
                      <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                   </div>
                   <div>

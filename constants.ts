@@ -21,44 +21,44 @@ export const MAIN_SECTIONS: MainSection[] = [
     title: "Best Sellers",
     subCategories: [
       { name: "Vegetables & Fruit", image: "https://i.ibb.co/tMXjVbZC/blob.png" },
-      { name: "Atta Rice & Dal", image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=300&q=80" },
-      { name: "Dairy Bread & Egg", image: "https://i.ibb.co/JjKGtjcf/blob.jpg" },
-      { name: "Oil Ghee & Masala", image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=300&q=80" },
-      { name: "Dry Fruit & Breakfast", image: "https://i.ibb.co/gM5mNPx4/blob.jpg" },
-      { name: "Chicken & Fish", image: "https://images.unsplash.com/photo-1587593810167-a6492f5605f1?auto=format&fit=crop&w=300&q=80" },
+      { name: "Atta, Rice & Dal", image: "https://i.ibb.co/bRyXBCds/blob.png" },
+      { name: "Dairy, Bread & Egg", image: "https://i.ibb.co/JjKGtjcf/blob.jpg" },
+      { name: "Oil, Ghee & Masala", image: "https://i.ibb.co/svdwSH8F/blob.png" },
+      { name: "Dry Fruit & Breakfast", image: "https://i.ibb.co/tT9XPnmG/blob.png" },
+      { name: "Chicken & Fish", image: "https://images.unsplash.com/photo-1606728035253-49e8a23146de?auto=format&fit=crop&w=300&q=80" },
     ]
   },
   {
     title: "Grocery",
     subCategories: [
       { name: "Vegetables & Fruit", image: "https://i.ibb.co/tMXjVbZC/blob.png" },
-      { name: "Atta Rice & Dal", image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=300&q=80" },
-      { name: "Oil Ghee & Masala", image: "https://images.unsplash.com/photo-1620574387735-3624d75b2dbc?auto=format&fit=crop&w=300&q=80" },
-      { name: "Dairy Bread & Egg", image: "https://i.ibb.co/JjKGtjcf/blob.jpg" },
+      { name: "Atta, Rice & Dal", image: "https://i.ibb.co/bRyXBCds/blob.png" },
+      { name: "Oil, Ghee & Masala", image: "https://i.ibb.co/svdwSH8F/blob.png" },
+      { name: "Dairy, Bread & Egg", image: "https://i.ibb.co/JjKGtjcf/blob.jpg" },
+      { name: "Dry Fruit & Cereals", image: "https://i.ibb.co/tT9XPnmG/blob.png" },
       { name: "Chicken & Fish", image: "https://images.unsplash.com/photo-1606728035253-49e8a23146de?auto=format&fit=crop&w=300&q=80" },
-      { name: "Bakery & Biscuits", image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=300&q=80" },
     ]
   },
   {
     title: "Snacks & Drinks",
     subCategories: [
-      { name: "Chips & Namkeen", image: "https://images.unsplash.com/photo-1621447504864-d8686e12698c?auto=format&fit=crop&w=300&q=80" },
-      { name: "Sweets & Chocolate", image: "https://images.unsplash.com/photo-1575224300306-1b8da36134ec?auto=format&fit=crop&w=300&q=80" },
+      { name: "Chips & Namkeen", image: "https://i.ibb.co/MDMGfhS6/blob.png" },
+      { name: "Sweets & Chocolate", image: "https://i.ibb.co/xK0bHRbf/blob.png" },
       { name: "Drinks & Juices", image: "https://i.ibb.co/C5PX8MkN/blob.jpg" },
-      { name: "Instant Food", image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=300&q=80" },
-      { name: "Ice Cream", image: "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?auto=format&fit=crop&w=300&q=80" },
-      { name: "Tea Coffee & Milk", image: "https://i.ibb.co/6R7dyGQt/blob.jpg" },
+      { name: "Instant Food", image: "https://i.ibb.co/nNjkZpxx/blob.png" },
+      { name: "Ice Creams", image: "https://i.ibb.co/0pKKtShs/blob.png" },
+      { name: "Tea, Coffee & Milk", image: "https://i.ibb.co/6R7dyGQt/blob.jpg" },
     ]
   },
   {
-    title: "Personal Care & Beauty",
+    title: "Beauty & Personal Care",
     subCategories: [
-      { name: "Bath & Body", image: "https://images.unsplash.com/photo-1608248597279-f99d160bfbc8?auto=format&fit=crop&w=300&q=80" },
-      { name: "Skin & Face", image: "https://images.unsplash.com/photo-1556228720-1957be6a964a?auto=format&fit=crop&w=300&q=80" },
-      { name: "Baby Care", image: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=300&q=80" },
-      { name: "Cleaner & Repellents", image: "https://i.ibb.co/MyBhZ0QF/blob.jpg" },
-      { name: "Household & Cleaning", image: "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=300&q=80" },
-      { name: "Feminine & Hygiene", image: "https://images.unsplash.com/photo-1554057009-6798e8751525?auto=format&fit=crop&w=300&q=80" },
+      { name: "Bath & Body", image: "https://i.ibb.co/Q34JT556/blob.png" },
+      { name: "Skin & Face", image: "https://i.ibb.co/My1YdCBQ/blob.png" },
+      { name: "Baby Care", image: "https://i.ibb.co/qYRZCWBM/blob.png" },
+      { name: "Feminine Hygiene", image: "https://i.ibb.co/8gRbmF82/blob.png" },
+      { name: "Household & Cleaning", image: "https://i.ibb.co/KxjQF1Vp/blob.png" },
+      { name: "Cleaners & Repellents", image: "https://i.ibb.co/MyBhZ0QF/blob.jpg" },
     ]
   }
 ];

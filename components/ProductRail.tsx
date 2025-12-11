@@ -2,6 +2,7 @@
 import React from 'react';
 import { Clock, Minus, Plus, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
+import ImageWithLoader from './ImageWithLoader';
 
 interface ProductRailProps {
   title: string;
@@ -39,17 +40,22 @@ const ProductRail: React.FC<ProductRailProps> = ({
         </button>
       </div>
 
-      <div className="flex overflow-x-auto no-scrollbar px-4 space-x-3 pb-2">
+      <div className="flex overflow-x-auto no-scrollbar px-4 space-x-3 pb-2" style={{ willChange: 'transform' }}>
         {products.map((item) => {
           const qty = cartItems[item.id] || 0;
           return (
             <div key={item.id} className="min-w-[140px] w-[140px] bg-white rounded-xl border border-gray-100 p-3 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow h-64">
                 
                 <div onClick={() => onProductClick(item)} className="cursor-pointer relative h-28 mb-2 w-full flex items-center justify-center bg-white rounded-lg overflow-hidden">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300" />
+                    <ImageWithLoader 
+                        src={item.image} 
+                        alt={item.name} 
+                        containerClassName="w-full h-full"
+                        className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300" 
+                    />
                     
                     {/* ETA Badge */}
-                    <div className="absolute bottom-1 left-1 bg-gray-100/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] font-bold text-gray-600 flex items-center space-x-1 shadow-sm">
+                    <div className="absolute bottom-1 left-1 bg-gray-100/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] font-bold text-gray-600 flex items-center space-x-1 shadow-sm z-20">
                         <Clock size={8} />
                         <span>{item.eta || '20m'}</span>
                     </div>

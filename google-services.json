@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "978626846670",
+    "firebase_url": "https://veggiego-23269-default-rtdb.firebaseio.com",
+    "project_id": "veggiego-23269",
+    "storage_bucket": "veggiego-23269.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:978626846670:android:f61292da3a49096e77959f",
+        "android_client_info": {
+          "package_name": "com.veghaat.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM5um7zXq6p-eGL8ZG3IlDgwmRrMNegss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

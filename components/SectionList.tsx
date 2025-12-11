@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { MainSection } from '../types';
+import ImageWithLoader from './ImageWithLoader';
 
 interface SectionListProps {
   sections: MainSection[];
@@ -18,12 +19,6 @@ const SectionList: React.FC<SectionListProps> = ({ sections, onCategoryClick }) 
             <div>
                  <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
             </div>
-            <button 
-              onClick={() => onCategoryClick(section.title)}
-              className="text-xs text-green-600 font-bold uppercase tracking-wide hover:underline"
-            >
-              See all
-            </button>
           </div>
           
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-y-6 gap-x-3 px-3">
@@ -38,9 +33,14 @@ const SectionList: React.FC<SectionListProps> = ({ sections, onCategoryClick }) 
                   className="flex flex-col items-center group relative cursor-pointer"
                   onClick={() => onCategoryClick(sub.name)} 
                 >
-                  {/* Product Image Container */}
-                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-gray-50 rounded-2xl mb-2 overflow-visible shadow-sm border border-transparent group-hover:border-green-500 transition-all active:scale-95 duration-200">
-                    <img src={sub.image} alt={sub.name} className="w-full h-full object-cover rounded-2xl" />
+                  {/* Category Image Container */}
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-blue-50/30 rounded-2xl mb-2 overflow-hidden shadow-sm border border-transparent group-hover:border-green-500 transition-all active:scale-95 duration-200 flex items-center justify-center p-2">
+                    <ImageWithLoader 
+                        src={sub.image} 
+                        alt={sub.name} 
+                        containerClassName="w-full h-full flex items-center justify-center"
+                        className="w-full h-full object-contain drop-shadow-sm mix-blend-multiply" 
+                    />
                   </div>
                   
                   <span className="text-xs font-medium text-center text-gray-700 w-24 leading-tight group-hover:text-green-700">

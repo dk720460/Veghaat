@@ -1,15 +1,24 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
     
+    <!-- Network Optimization: Preconnect to Image CDNs -->
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preconnect" href="https://i.ibb.co">
+    <link rel="preconnect" href="https://cdn-icons-png.flaticon.com">
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://i.ibb.co">
+
     <!-- PWA & Mobile Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#F4F6F8">
     <meta name="description" content="VegHaat - Fresh Grocery Delivery in 20 Minutes">
+    <link rel="manifest" href="/manifest.json">
     
     <title>VegHaat</title>
     
@@ -53,13 +62,13 @@
       
       /* Shimmer Effect for Loading */
       @keyframes shimmer {
-        0% { background-position: -1000px 0; }
-        100% { background-position: 1000px 0; }
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
       }
       .animate-shimmer {
-        animation: shimmer 2s infinite linear;
-        background: linear-gradient(to right, #f6f7f8 4%, #edeef1 25%, #f6f7f8 36%);
-        background-size: 1000px 100%;
+        animation: shimmer 1.5s infinite linear;
+        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+        background-size: 200% 100%;
       }
 
       /* Custom Animation for Bike */
@@ -149,11 +158,11 @@
   <script type="importmap">
 {
   "imports": {
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
     "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
     "vite": "https://aistudiocdn.com/vite@^7.2.7",
     "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
