@@ -1,7 +1,7 @@
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/database';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
 
 // Configuration based on your google-services.json
 const firebaseConfig = {
@@ -15,13 +15,14 @@ const firebaseConfig = {
   measurementId: "G-2SLQSVYFEX"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+// Initialize Firebase using the Modular SDK pattern
+const app = initializeApp(firebaseConfig);
 
-export const db = firebase.database();
-export const auth = firebase.auth();
-export default firebase;
+// Export instances
+export const db = getDatabase(app);
+export const auth = getAuth(app);
 
-// Enable language localization for SMS templates
+// Use auth language setting if needed (Modular way)
 auth.useDeviceLanguage();
+
+export default app;

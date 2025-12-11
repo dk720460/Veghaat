@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { User, ChevronDown, Loader, MapPin } from 'lucide-react';
+import { ref, onValue, set, get, child } from 'firebase/database';
+import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebase';
 import { APP_NAME, SEARCH_ITEMS, BANNERS as STATIC_BANNERS, MAIN_SECTIONS as STATIC_SECTIONS } from './constants';
 import SearchBar from './components/SearchBar';
@@ -111,12 +113,12 @@ const App: React.FC = () => {
 
   // --- 1. AUTH & USER DATA ---
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
           setUser(currentUser);
-          const userRef = db.ref(`users/${currentUser.uid}`);
+          const userRef = ref(db, `users/${currentUser.uid}`);
           try {
-              const snapshot = await userRef.once('value');
+              const snapshot = await get(userRef);
               if (snapshot.exists()) {
                   const data = snapshot.val();
                   if (data.address && data.address.flat && data.address.area) {
@@ -161,8 +163,8 @@ const App: React.FC = () => {
 
   // --- 2. FIREBASE DATA SYNC (With Local Caching) ---
   useEffect(() => {
-    const productsRef = db.ref('products');
-    const handleProductsValue = (snapshot: any) => {
+    const productsRef = ref(db, 'products');
+    const unsubscribeProducts = onValue(productsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         let allProducts: Product[] = [];
@@ -185,11 +187,10 @@ const App: React.FC = () => {
         // Cache for next load
         localStorage.setItem('products_cache', JSON.stringify(allProducts));
       }
-    };
-    productsRef.on('value', handleProductsValue);
+    });
 
-    const bannersRef = db.ref('banners');
-    const handleBannersValue = (snapshot: any) => {
+    const bannersRef = ref(db, 'banners');
+    const unsubscribeBanners = onValue(bannersRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         let formattedBanners: Banner[] = [];
@@ -202,24 +203,22 @@ const App: React.FC = () => {
         setBanners(finalBanners);
         localStorage.setItem('banners_cache', JSON.stringify(finalBanners));
       }
-    };
-    bannersRef.on('value', handleBannersValue);
+    });
 
-    const sectionsRef = db.ref('sections');
-    const handleSectionsValue = (snapshot: any) => {
+    const sectionsRef = ref(db, 'sections');
+    const unsubscribeSections = onValue(sectionsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
          const newSections = Array.isArray(data) ? data : Object.values(data) as MainSection[];
          setSections(newSections);
          localStorage.setItem('sections_cache', JSON.stringify(newSections));
       }
-    };
-    sectionsRef.on('value', handleSectionsValue);
-
+    });
+    
     return () => {
-        productsRef.off('value', handleProductsValue);
-        bannersRef.off('value', handleBannersValue);
-        sectionsRef.off('value', handleSectionsValue);
+        unsubscribeProducts();
+        unsubscribeBanners();
+        unsubscribeSections();
     };
   }, []);
 
@@ -271,16 +270,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!user) { setOrders([]); return; }
-    const ordersRef = db.ref('orders');
-    const handleOrders = (snapshot: any) => {
+    const ordersRef = ref(db, 'orders');
+    const unsubscribe = onValue(ordersRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const allOrders = Object.values(data) as Order[];
         setOrders(allOrders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       } else { setOrders([]); }
-    };
-    ordersRef.on('value', handleOrders);
-    return () => { ordersRef.off('value', handleOrders); };
+    });
+    return () => unsubscribe();
   }, [user]);
 
   // --- 3. PROFESSIONAL BACK NAVIGATION LOGIC ---
@@ -419,7 +417,7 @@ const App: React.FC = () => {
       const newOrders = [newOrder, ...orders];
       setOrders(newOrders);
       
-      db.ref(`orders/${newOrder.id}`).set(newOrder)
+      set(ref(db, `orders/${newOrder.id}`), newOrder)
       .then(() => setCartItems({}))
       .catch(err => {
          console.error(err);
